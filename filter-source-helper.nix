@@ -25,8 +25,8 @@ let
         let split = match "^(!?)(.*)" l;
         in [(elemAt split 1) (head split == "!")];
       substWildcards = replaceStrings
-        ["\\*" "**/" "**" "*" "?"]
-        ["\\*" ".*" ".*" "[^/]*" "[^/]"];
+        ["\\*" "\\?" "\\+" "\\." "\\(" "\\)" "\\\\" "**/" "**" "*" "?"]
+        ["\\*" "\\?" "\\+" "\\." "\\(" "\\)" "\\\\" ".*" ".*" "[^/]*" "[^/]"];
     in
       map (l: mapPat substWildcards (computeNegation l))
       (filter (l: !isList l && !isComment l)
