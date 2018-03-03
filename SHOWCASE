@@ -2,24 +2,44 @@
   build-tree  filter-source-helper.nix
 
 % ./build-tree; find test-tree
-  test-tree
-  test-tree/a
-  test-tree/c
-  test-tree/b
-  test-tree/d
-  test-tree/d/1
-  test-tree/d/3
-  test-tree/d/2
-  test-tree/d/4
+    test-tree
+    test-tree/e
+    test-tree/e/foo.html
+    test-tree/e/html
+    test-tree/e/html/foo.html
+    test-tree/e/html/bar.html
+    test-tree/e/bar.html
+    test-tree/a
+    test-tree/c
+    test-tree/b
+    test-tree/d
+    test-tree/d/1
+    test-tree/d/3
+    test-tree/d/10
+    test-tree/d/2
+    test-tree/d/4
 
 % nix eval '(import ./filter-source-helper.nix)' --json | jq -r '.[]' | xargs find
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/a
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/c
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/d
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/d/3
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/a
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/c
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/d
-    /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/d/3
+    # the git
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/foo.html
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/html
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/html/foo.html
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/html/bar.html
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/bar.html
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/a
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/c
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/d
+
+    # the patterns
+    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/d/3
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/e
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/e/html
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/e/html/foo.html
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/a
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/c
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/d
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/d/3
+    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/d/10
