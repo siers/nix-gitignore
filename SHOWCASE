@@ -2,44 +2,35 @@
   build-tree  filter-source-helper.nix
 
 % ./build-tree; find test-tree
-    test-tree
-    test-tree/e
-    test-tree/e/foo.html
-    test-tree/e/html
-    test-tree/e/html/foo.html
-    test-tree/e/html/bar.html
-    test-tree/e/bar.html
-    test-tree/a
-    test-tree/c
-    test-tree/b
-    test-tree/d
-    test-tree/d/1
-    test-tree/d/3
-    test-tree/d/10
-    test-tree/d/2
-    test-tree/d/4
 
 % nix eval '(import ./filter-source-helper.nix)' --json | jq -r '.[]' | xargs find
-    # the git
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/foo.html
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/html
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/html/foo.html
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/html/bar.html
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/e/bar.html
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/a
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/c
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/d
+    # patterns
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/1-simple
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/1-simple/1
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/1-simple/3
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/2-negation
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/2-negation/30
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/3-wildcards
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/3-wildcards/bar.html
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/3-wildcards/foo.html
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/3-wildcards/html
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/3-wildcards/html/bar.html
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/3-wildcards/html/foo.html
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/4-escapes
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/4-escapes/*.html
+    /nix/store/42gdln7mlpsq6i6jcr34mblb3hkw2fjp-test-tree/4-escapes/other.html
 
-    # the patterns
-    /nix/store/wfphqv12i25031ndrpsb3756676vkkba-test-tree/d/3
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/e
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/e/html
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/e/html/foo.html
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/a
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/c
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/d
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/d/3
-    /nix/store/by58nk77lqh46srn7qkz2ms5g0wja9y5-test-tree/d/10
+    # git patterns
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/1-simple
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/1-simple/1
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/1-simple/3
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/2-negation
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/2-negation/10
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/2-negation/30
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/3-wildcards
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/3-wildcards/html
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/3-wildcards/html/foo.html
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/4-escapes
+    /nix/store/5wf8hdmqds5j9vh1w35jfqhik64lf70i-test-tree/4-escapes/other.html

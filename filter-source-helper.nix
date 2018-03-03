@@ -32,24 +32,25 @@ let
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));
 
+  sourcePat = filterPattern ./test-tree [
+    ["^1.*/2$"  false]
+    ["^2.*/30$" true]
+    ["^2.*/.*"  false]
+  ];
+
   sourceGit = filterPattern ./test-tree
     (gitignoreToPatterns ''
-      b
+      1-simple/2
 
-      # keep d/3
-      !d/3
-      !d/1?
-      d/*
+      !2-*/1?
+      !2-*/30
+      2-*/*
 
-      e/*foo.html
-      e/**/bar.html
+      3-*/*foo.html
+      3-*/**/bar.html
+
+      4-*/\*.html
     '');
-
-  sourcePat = filterPattern ./test-tree [
-    ["^b$" false]
-    ["^d/3$" true]
-    ["^d/.*" false]
-  ];
 
 in
   [ sourcePat sourceGit ]

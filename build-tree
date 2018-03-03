@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-mkdir -p test-tree/{a,b,c,d/{1,2,3,4,10},e/{{foo,bar}.html,html/{foo,bar}.html}}
+rm -rf test-tree
+mkdir -p test-tree/1-simple/{1,2,3}
+mkdir -p test-tree/2-negation/{10,20,30,40,50}
+mkdir -p test-tree/3-wildcards/{{foo,bar}.html,html/{foo,bar}.html}
+mkdir -p test-tree/4-escapes/{*,other}.html
