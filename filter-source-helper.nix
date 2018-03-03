@@ -13,15 +13,15 @@ with (import <nixpkgs> {});
 let
   tail = l: builtins.elemAt l ((builtins.length l) - 1);
 
-  filterPattern = with builtins; source: patterns:
-    filterSource (name: _type:
+  filterPattern = with builtins; patterns: source:
+    (name: _type:
       let
         relPath = lib.removePrefix ((toString source) + "/") name;
         matches = pair: (match (head pair) relPath) != null;
         matched = map (pair: [(matches pair) (tail pair)]) patterns;
       in
         tail (head ((filter head matched) ++ [[true true]]))
-    ) source;
+    );
 
   gitignoreToPatterns = with builtins; gitignore:
     let
@@ -38,13 +38,13 @@ let
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));
 
-  sourcePat = filterPattern ./test-tree [
+  sourcePat = builtins.filterSource (filterPattern[
     ["^1.*/2$"  false]
     ["^2.*/30$" true]
     ["^2.*/.*"  false]
-  ];
+  ] ./test-tree ) ./test-tree;
 
-  sourceGit = filterPattern ./test-tree
+  sourceGit = builtins.filterSource (filterPattern
     (gitignoreToPatterns ''
       1-simple/2
 
@@ -56,7 +56,7 @@ let
       3-*/**/bar.html
 
       4-*/\*.html
-    '');
+    '') ./test-tree) ./test-tree;
 
 in
   [ sourcePat sourceGit ]
