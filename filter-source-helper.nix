@@ -1,5 +1,11 @@
 with (import <nixpkgs> {});
 
+# This probably doesn't work quite the way gitignore does,
+# but it might be very close.
+
+# p know that if you ignore "directory" in git, it won't care about
+# pegations no matter the order, this will care about the order.
+
 # A slash followed by two consecutive asterisks then a slash matches
 # zero or more directories. For example, "a/**/b" matches "a/b",
 # "a/x/b", "a/x/y/b" and so on.
