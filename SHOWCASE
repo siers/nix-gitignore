@@ -1,0 +1,20 @@
+s|code/nix/filter-source-helper % ls
+  build-tree  filter-source-helper.nix
+
+s|code/nix/filter-source-helper % ./build-tree; find test-tree
+  test-tree
+  test-tree/a
+  test-tree/c
+  test-tree/b
+  test-tree/d
+  test-tree/d/1
+  test-tree/d/3
+  test-tree/d/2
+  test-tree/d/4
+
+s|code/nix/filter-source-helper % find $(nix eval '(import ./filter-source-helper.nix)' | tr -d \")
+  /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree
+  /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/a
+  /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/c
+  /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/d
+  /nix/store/2j3d02iyi72kwycq2f222wzbw1mlchlq-test-tree/d/3
