@@ -1,5 +1,15 @@
 with (import <nixpkgs> {});
-with (import ./filter-source-patterns.nix { inherit lib; });
+
+let
+  nixgitignoreLocal = import ./. { inherit lib; };
+  nixgitignoreGithub = import (pkgs.fetchFromGitHub {
+    owner = "siers";
+    repo = "nix-gitignore";
+    rev = "c7580241aed2ab126ca3daeee21e6096a3a08b18";
+    sha256 = "1dx3m7r4hlmrv65ik6j30r6zyif0r5v29ycklrz3pw58vnplngdf";
+  }) { inherit lib; };
+in
+  with nixgitignoreGithub;
 
 let
   # an example to get a rough feel of what the filterPattern does
