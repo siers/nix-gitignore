@@ -23,22 +23,41 @@ let
         tail (head ((filter head matched) ++ [[true true]]))
     );
 
+  # string -> [[regex bool]]
   gitignoreToPatterns = with builtins; gitignore:
     let
-      mapPat = f: l: [(f (head l)) (tail l)];
+      # regex -> bool
       isComment = i: (match "^(#.*|$)" i) != null;
+
+      # ignore -> [ignore bool]
       computeNegation = l:
         let split = match "^(!?)(.*)" l;
         in [(elemAt split 1) (head split == "!")];
+
+      # ignore -> regex
       substWildcards = replaceStrings
         ["\\*" "\\?" "\\+" "\\." "\\(" "\\)" "\\\\" "**/" "**" "*" "?"]
         ["\\*" "\\?" "\\+" "\\." "\\(" "\\)" "\\\\" ".*" ".*" "[^/]*" "[^/]"];
+
+      # regex -> regex
+      handleSlashPref = l:
+        let split = (match "^(/?)(.*)" l);
+        in
+          (if (elemAt split 0) == "/"
+          then "^"
+          else "(^|.*/)")
+          + (elemAt split 1);
+
+      # (regex -> regex) -> [regex bool] -> [regex bool]
+      mapPat = f: l: [(f (head l)) (tail l)];
     in
-      map (l: mapPat substWildcards (computeNegation l))
+      map (l: mapPat (l: handleSlashPref (substWildcards l))
+        (computeNegation l))
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));
 
-  sourcePat = builtins.filterSource (filterPattern[
+  # an example to get a rough feel of what the filterPattern does
+  sourcePat = builtins.filterSource (filterPattern [
     ["^1.*/2$"  false]
     ["^2.*/30$" true]
     ["^2.*/.*"  false]
@@ -46,10 +65,14 @@ let
 
   sourceGit = builtins.filterSource (filterPattern
     (gitignoreToPatterns ''
-      1-simple/2
+      1-simple/1
+      /1-simple/2
+      ^1-simple/3
 
       !2-*/1?
       !2-*/30
+      !/40
+      !50
       2-*/*
 
       3-*/*foo.html
