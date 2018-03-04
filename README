@@ -59,36 +59,12 @@
 
 % nix eval '(import ./examples.nix)' --json | jq -r '.[]' | \
   xargs -rL1 sh -c 'find "$@" | sed "s@/.\{32\}-@/...-@" | sort' ''
-    # patterns
+    # the git patterns only
     /nix/store/...-test-tree
     /nix/store/...-test-tree/1-simple
-    /nix/store/...-test-tree/1-simple/1
-    /nix/store/...-test-tree/1-simple/3
+    /nix/store/...-test-tree/1-simple/^$
+    /nix/store/...-test-tree/1-simple/$^
     /nix/store/...-test-tree/1-simple/4
-    /nix/store/...-test-tree/1-simple/5
-    /nix/store/...-test-tree/2-negation
-    /nix/store/...-test-tree/2-negation/30
-    /nix/store/...-test-tree/3-wildcards
-    /nix/store/...-test-tree/3-wildcards/bar.html
-    /nix/store/...-test-tree/3-wildcards/foo.html
-    /nix/store/...-test-tree/3-wildcards/html
-    /nix/store/...-test-tree/3-wildcards/html/bar.html
-    /nix/store/...-test-tree/3-wildcards/html/foo.html
-    /nix/store/...-test-tree/4-escapes
-    /nix/store/...-test-tree/4-escapes/*.html
-    /nix/store/...-test-tree/4-escapes/o__ther.html
-    /nix/store/...-test-tree/4-escapes/o_ther.html
-    /nix/store/...-test-tree/4-escapes/o?ther.html
-    /nix/store/...-test-tree/4-escapes/other.html
-    /nix/store/...-test-tree/4-escapes/other.html$
-    /nix/store/...-test-tree/4-escapes/other.html$$
-
-    # git patterns
-    /nix/store/...-test-tree
-    /nix/store/...-test-tree/1-simple
-    /nix/store/...-test-tree/1-simple/3
-    /nix/store/...-test-tree/1-simple/4
-    /nix/store/...-test-tree/1-simple/5
     /nix/store/...-test-tree/2-negation
     /nix/store/...-test-tree/2-negation/10
     /nix/store/...-test-tree/2-negation/30
