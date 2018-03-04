@@ -11,6 +11,7 @@ with (import <nixpkgs> {});
 # "a/x/b", "a/x/y/b" and so on.
 
 let
+  debug = a: builtins.trace a a;
   tail = l: builtins.elemAt l ((builtins.length l) - 1);
 
   filterPattern = with builtins; patterns: source:
@@ -35,9 +36,16 @@ let
         in [(elemAt split 1) (head split == "!")];
 
       # ignore -> regex
-      substWildcards = replaceStrings
-        ["\\*" "\\?" "\\+" "\\." "\\(" "\\)" "\\\\" "**/" "**" "*" "?"]
-        ["\\*" "\\?" "\\+" "\\." "\\(" "\\)" "\\\\" ".*" ".*" "[^/]*" "[^/]"];
+      substWildcards =
+        let
+          special = "^$.+{}()";
+          escs = "\\*?";
+          chars = s: filter (c: c != "" && !isList c) (split "" s);
+          escape = s: map (c: "\\" + c) (chars s);
+        in
+          replaceStrings
+            ((chars special)  ++ (escape escs) ++ ["**/" "**" "*"     "?"])
+            ((escape special) ++ (escape escs) ++ [".*"  ".*" "[^/]*" "[^/]"]);
 
       # regex -> regex
       handleSlashPref = l:
@@ -79,6 +87,9 @@ let
       3-*/**/bar.html
 
       4-*/\*.html
+      4-*/o??ther.html
+      4-*/o\?ther.html
+      4-*/other.html$
     '') ./test-tree) ./test-tree;
 
 in
