@@ -13,11 +13,11 @@
 let
   debug = a: builtins.trace a a;
   tail = l: builtins.elemAt l ((builtins.length l) - 1);
-in {
-  filterPattern = with builtins; patterns: source:
+in rec {
+  filterPattern = with builtins; patterns: root:
     (name: _type:
       let
-        relPath = lib.removePrefix ((toString source) + "/") name;
+        relPath = lib.removePrefix ((toString root) + "/") name;
         matches = pair: (match (head pair) relPath) != null;
         matched = map (pair: [(matches pair) (tail pair)]) patterns;
       in
@@ -63,4 +63,6 @@ in {
         (computeNegation l))
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));
+
+  gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 }
