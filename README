@@ -3,6 +3,9 @@
     translation to regexes. There are cases when the ordering of patterns
     matters somewhat, unlike with gitignore.
 
+    NB: This is untested and experimental! How well it works is currently
+    anyone's guess.
+
 % ls
   build-tree  filter-source-helper.nix  README
 
