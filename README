@@ -54,8 +54,8 @@
     4-*/o\?ther.html
     4-*/other.html$
 
-# sed 's@/.\{32\}-@/...-@'
-% nix eval '(import ./filter-source-helper.nix)' --json | jq -r '.[]' | xargs find
+% nix eval '(import ./examples.nix)' --json | jq -r '.[]' | \
+  xargs -rL1 sh -c 'find "$@" | sed "s@/.\{32\}-@/...-@" | sort' ''
     # patterns
     /nix/store/...-test-tree
     /nix/store/...-test-tree/1-simple
