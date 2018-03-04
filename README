@@ -35,6 +35,25 @@
     test-tree/4-escapes/other.html$
     test-tree/4-escapes/other.html$$
 
+# The patterns used:
+    1-simple/1
+    /1-simple/2
+    ^1-simple/3
+
+    !2-*/1?
+    !2-*/30
+    !/40
+    !50
+    2-*/*
+
+    3-*/*foo.html
+    3-*/**/bar.html
+
+    4-*/\*.html
+    4-*/o??ther.html
+    4-*/o\?ther.html
+    4-*/other.html$
+
 # sed 's@/.\{32\}-@/...-@'
 % nix eval '(import ./filter-source-helper.nix)' --json | jq -r '.[]' | xargs find
     # patterns
