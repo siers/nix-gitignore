@@ -1,7 +1,5 @@
 { lib }:
 
-# This filter might be close to what gitignore does,
-
 # An interesting bit from the gitignore(5):
 # - A slash followed by two consecutive asterisks then a slash matches
 # - zero or more directories. For example, "a/**/b" matches "a/b",

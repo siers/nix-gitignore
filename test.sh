@@ -3,11 +3,13 @@
 set -eu
 
 create-tree() { (
-    mkdir -p "$1"/{1-simple,2-negation,3-wildcards,4-escapes}
-    cd "$1"
+    mkdir -p "$1"; cd "$1"
+
+    mkdir -p 0-failing
+    touch 0-failing/{\\,\\\\,],]],ab,bb}
 
     mkdir -p 1-simple
-    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,\\,\\\\}
+    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[}
 
     mkdir -p 2-negation
     touch 2-negation/{.keep,10,20,30,40,50}

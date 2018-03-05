@@ -14,9 +14,12 @@ in
 
 let
   ignores = ''
+    0-failing/[\\\]]
+    0-failing/[^a]b
+
     1-simple/1
     /1-simple/2
-    /1-simple/[35^$[\\]
+    /1-simple/[35^$[]
 
     !2-*/1?
     !2-*/30

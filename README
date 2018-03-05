@@ -1,11 +1,12 @@
 - filter-source-helper.nix
     This implements primitive a gitignore filter for filterSource via
-    translation to regexes.
+    translation to regexes. I just wanted to see how far I could get with the
+    current approach and it turns out that I can get quite far.
 
-    I've added some tests in test.{sh,nix} that show that it mimicks the
-    actual gitignore implementation quite well. It currently matches the
-    `[\\]` character class incorrectly, though I'm sure more bugs can be
-    found.
+    I've added some tests in test.{sh,nix} that show that it mostly
+    mimicks the actual gitignore implementation.
+
+    Currently, the inverse character classes, [\\] and [\]] don't work.
 
 % ls
   build-tree  filter-source-helper.nix  README
