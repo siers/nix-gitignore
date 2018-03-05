@@ -1,16 +1,5 @@
 with (import <nixpkgs> {});
-
-let
-  nixgitignoreLocal = import ./. { inherit lib; };
-  nixgitignoreGithub = import (pkgs.fetchFromGitHub {
-    owner = "siers";
-    repo = "nix-gitignore";
-    rev = "9fe8c3a183be9b10aaa6319b5641b2f23711d5eb";
-    sha256 = "0dv0n0igx3yny2jg2bknp9l0qxvv4b032pil743aqwmyivrbbshh";
-    # nix-prefetch-git https://github.com/siers/nix-gitignore | jq -r '"\"rev\" = \"\(.rev)\";\n\"sha256\" = \"\(.sha256)\";"'
-  }) { inherit lib; };
-in
-  with nixgitignoreLocal;
+with (import ./. { inherit lib; });
 
 let
   ignores = ''
