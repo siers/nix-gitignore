@@ -7,7 +7,7 @@ create-tree() { (
     cd "$1"
 
     mkdir -p 1-simple
-    touch 1-simple/{1,2,3,4,5,^,$,^$,$^}
+    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,\\,\\\\}
 
     mkdir -p 2-negation
     touch 2-negation/{10,20,30,40,50}

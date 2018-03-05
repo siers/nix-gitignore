@@ -16,7 +16,7 @@ let
   ignores = ''
     1-simple/1
     /1-simple/2
-    /1-simple/[35^$]
+    /1-simple/[35^$[\\]
 
     2-*/*
     !2-*/1?

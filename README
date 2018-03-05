@@ -3,8 +3,10 @@
     translation to regexes. There are cases when the ordering of patterns
     matters somewhat, unlike with gitignore.
 
-    NB: This is untested and experimental! How well it works is currently
-    anyone's guess.
+    I've added some tests in test.{sh,nix} that show that it mimicks the
+    actual gitignore implementation quite well. It currently matches the
+    `[\\]` character class incorrectly, though I'm sure more bugs can be
+    found.
 
 % ls
   build-tree  filter-source-helper.nix  README
