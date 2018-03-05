@@ -2,9 +2,6 @@
 
 # This filter might be close to what gitignore does,
 
-# I know that if you ignore a "directory" in git, it won't care about
-# operations no matter the order, this will care about the order.
-
 # An interesting bit from the gitignore(5):
 # - A slash followed by two consecutive asterisks then a slash matches
 # - zero or more directories. For example, "a/**/b" matches "a/b",
@@ -21,7 +18,7 @@ in rec {
         matches = pair: (match (head pair) relPath) != null;
         matched = map (pair: [(matches pair) (tail pair)]) patterns;
       in
-        tail (head ((filter head matched) ++ [[true true]]))
+        tail (tail ([[true true]] ++ (filter head matched)))
     );
 
   # string -> [[regex bool]]

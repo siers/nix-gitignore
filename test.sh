@@ -10,7 +10,7 @@ create-tree() { (
     touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,\\,\\\\}
 
     mkdir -p 2-negation
-    touch 2-negation/{10,20,30,40,50}
+    touch 2-negation/{.keep,10,20,30,40,50}
 
     mkdir -p 3-wildcards/html
     touch 3-wildcards/{foo,bar}.html

@@ -1,7 +1,6 @@
 - filter-source-helper.nix
     This implements primitive a gitignore filter for filterSource via
-    translation to regexes. There are cases when the ordering of patterns
-    matters somewhat, unlike with gitignore.
+    translation to regexes.
 
     I've added some tests in test.{sh,nix} that show that it mimicks the
     actual gitignore implementation quite well. It currently matches the
