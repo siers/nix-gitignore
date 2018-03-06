@@ -1,15 +1,15 @@
-# filter-source-helper.nix
+# nix-gitignore
 This implements primitive a gitignore filter for `builtins.filterSource` via
 translation to regexes. I just wanted to see how far I could get with the
 current approach and it turns out that I can get quite far.
 
+Please add give this a star iff this project proves to be useful to you.
 
 I highly recommend taking a look at the test files
 [test.nix](https://github.com/siers/nix-gitignore/blob/master/test.nix) and
 [test.sh](https://github.com/siers/nix-gitignore/blob/master/test.sh)
-which show that it mostly correctly mimics the actual gitignore implementation.
-
-Currently, the inverse character classes(`[^a]`), `[\\]` and `[\]]` don't work.
+which show how closely the actual git implementation's being mimicked and the section detailing
+the [known differences](#known-deviances-from-gits-implementation).
 
 ## Usage
 
@@ -22,6 +22,8 @@ nix-prefetch-git https://github.com/siers/nix-gitignore 2> /dev/null | jq -r '"r
 in this snippet:
 
 ```nix
+with (import <nixpkgs> {});
+
 let
   gitignore = import (pkgs.fetchFromGitHub {
     owner = "siers";
@@ -39,6 +41,8 @@ let
   '';
 
   source = builtins.filterSource (gitignoreFilter ignores ./source) ./source;
+in
+  "use ${source} here"
 ```
 
 ### Known deviances from git's implementation
