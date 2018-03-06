@@ -41,18 +41,24 @@ let
   source = builtins.filterSource (gitignoreFilter ignores ./source) ./source;
 ```
 
-### Currently failing tests:
+### Known deviances from git's implementation
+
+For some odd reason `git` matches `\\` on the `[\\]` pattern whereas this `nix-gitignore` matches just the `\`.
 
 ```diff
-s|code/nix/filter-source-helper master % ./test.sh
-/nix/store/z64bfdc8377kbnnh6ihn3pgy9qqdzkv2-test-tree
-/nix/store/5sxxq66dqkr1fiw25xiibpizk9wajnpn-test-tree
+% ./test.sh
+/nix/store/1snailhbagighdk7s1ixg4s323bk7gaf-test-tree-git
+/nix/store/r1y0djs054z8561xwm0hxrzvvay1yz9s-test-tree
 
-2a3
-> 0-failing/]
-5c6,7
-< 0-failing/ab
+/nix/store/1snailhbagighdk7s1ixg4s323bk7gaf-test-tree-git/0-failing
+/nix/store/1snailhbagighdk7s1ixg4s323bk7gaf-test-tree-git/0-failing/\
+/nix/store/r1y0djs054z8561xwm0hxrzvvay1yz9s-test-tree/0-failing
+/nix/store/r1y0djs054z8561xwm0hxrzvvay1yz9s-test-tree/0-failing/\\
+
+3c3
+< 0-failing/\
 ---
 > 0-failing/\\
-> 0-failing/bb
 ```
+
+If you find any other deviances, please file an issue.

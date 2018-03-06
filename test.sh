@@ -6,10 +6,10 @@ create-tree() { (
     mkdir -p "$1"; cd "$1"
 
     mkdir -p 0-failing
-    touch 0-failing/{\\,\\\\,],]],ab,bb}
+    touch 0-failing/{\\,\\\\}
 
     mkdir -p 1-simple
-    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[}
+    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb}
 
     mkdir -p 2-negation
     touch 2-negation/{.keep,10,20,30,40,50}
@@ -34,6 +34,8 @@ nix="$(nix eval -f test.nix nix --json | jq -r .)"
 
 echo "$git"
 echo "$nix"
+echo
+find $(find "$git" "$nix" -name '0-*')
 echo
 diff --color <(list-sort "$git") <(list-sort "$nix") || :
 

@@ -22,7 +22,7 @@ in rec {
   # string -> [[regex bool]]
   gitignoreToPatterns = with builtins; gitignore:
     let
-      # regex -> bool
+      # ignore -> bool
       isComment = i: (match "^(#.*|$)" i) != null;
 
       # ignore -> [ignore bool]
@@ -42,6 +42,14 @@ in rec {
             ((chars special)  ++ (escape escs) ++ ["**/" "**" "*"     "?"])
             ((escape special) ++ (escape escs) ++ [".*"  ".*" "[^/]*" "[^/]"]);
 
+      # (regex -> regex) -> regex -> regex
+      mapAroundCharclass = with builtins; f: r: # rl = regex or list
+        let slightFix = replaceStrings ["\\]"] ["]"];
+        in
+          concatStringsSep ""
+          (map (rl: if isList rl then slightFix (elemAt rl 0) else f rl)
+          (split "(\\[([^\\\\]|\\\\.)+])" r));
+
       # regex -> regex
       handleSlashPref = l:
         let split = (match "^(/?)(.*)" l);
@@ -54,7 +62,8 @@ in rec {
       # (regex -> regex) -> [regex bool] -> [regex bool]
       mapPat = f: l: [(f (head l)) (tail l)];
     in
-      map (l: mapPat (l: handleSlashPref (substWildcards l))
+      map (l: # `l' for "line"
+        mapPat (l: handleSlashPref (mapAroundCharclass substWildcards l))
         (computeNegation l))
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));

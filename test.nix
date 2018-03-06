@@ -3,18 +3,19 @@ with (import ./. { inherit lib; });
 
 let
   ignores = ''
-    0-failing/[\\\]]
-    0-failing/[^a]b
+    0-failing/[\\]
 
     1-simple/1
     /1-simple/2
-    /1-simple/[35^$[]
+    /1-simple/[35^$[]]
+    /1-simple/][\]]
+    /1-simple/[^a]b
 
+    2-*/[^.]*
     !2-*/1?
     !2-*/30
     !/40
     !50
-    2-*/[0-9]*
 
     3-*/*foo.html
     3-*/**/bar.html
@@ -29,7 +30,7 @@ let
 
   sourceNix = builtins.filterSource (gitignoreFilter ignores source) source;
 
-  sourceGit = runCommand "test-tree" {} ''
+  sourceGit = runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
     cp -r ${source}/* .; chmod -R u+w .
 
@@ -44,6 +45,8 @@ let
 
 
 in {
+  debug = gitignoreToPatterns ignores;
+
   nix = sourceNix;
   git = sourceGit;
 }
