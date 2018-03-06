@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 create-tree() { (
     mkdir -p "$1"; cd "$1"
@@ -28,9 +28,9 @@ list-sort() {
 
 create-tree test-tree
 
-nix build '(import ./test.nix).git'
+nix build -f test.nix git
 git="$(readlink result)"; rm result
-nix="$(nix eval '(import ./test.nix).nix' --json | jq -r .)"
+nix="$(nix eval -f test.nix nix --json | jq -r .)"
 
 echo "$git"
 echo "$nix"
