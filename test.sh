@@ -27,6 +27,7 @@ list-sort() {
 }
 
 create-tree test-tree
+install -m644 "$(nix eval --raw -f test.nix ignores)" ./test-tree/.gitignore
 
 nix build -f test.nix git
 git="$(readlink result)"; rm result

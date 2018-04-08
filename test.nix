@@ -28,7 +28,7 @@ let
 
   source = ./test-tree;
 
-  sourceNix = builtins.filterSource (gitignoreFilter ignores source) source;
+  sourceNix = gitignoreFilterSource source;
 
   sourceGit = runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
@@ -38,14 +38,17 @@ let
     ${git}/bin/git init
     ${git}/bin/git status --porcelain --ignored | \
       sed -n '/^!! / { s/^...//; p }' | xargs -r rm -r
-    cp -r ./* ..
 
+    rm -r .git
+    shopt -s dotglob; cp -r ./* ..
     cd $out; rm -rf tmp
   '';
 
 
 in {
   debug = gitignoreToPatterns ignores;
+
+  ignores = builtins.toFile "nixgitignore-ignores" ignores;
 
   nix = sourceNix;
   git = sourceGit;

@@ -9,6 +9,7 @@ let
   debug = a: builtins.trace a a;
   tail = l: builtins.elemAt l ((builtins.length l) - 1);
 in rec {
+  # [["good/relative/source/file" true] ["bad.tmpfile" false]] -> root -> path
   filterPattern = with builtins; patterns: root:
     (name: _type:
       let
@@ -69,4 +70,13 @@ in rec {
       (split "\n" gitignore));
 
   gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
+
+  gitignoreFilterSourcePure = ign: root:
+    builtins.filterSource (gitignoreFilter ign root) root;
+
+  gitignoreFilterSource' = aux: root:
+    let gitign = builtins.readFile "${toString root}/.gitignore";
+    in gitignoreFilterSourcePure (gitign + "\n" + aux) root;
+
+  gitignoreFilterSource = gitignoreFilterSource' "";
 }

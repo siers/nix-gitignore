@@ -11,7 +11,7 @@ I highly recommend taking a look at the test files
 which show how closely the actual git implementation's being mimicked and the section detailing
 the [known differences](#known-deviances-from-gits-implementation).
 
-## Usage
+## Example
 
 Replace the `rev` and `sha256` lines with the output of this command:
 
@@ -35,15 +35,29 @@ in
   with gitignore;
 
 let
-  ignores = (builtins.readFile ./source/.gitignore) +  ''
+  additionalIgnores = ''
     /this
     /that/**.html
   '';
 
-  source = builtins.filterSource (gitignoreFilter ignores ./source) ./source;
+  source = gitignoreFilterSource' additionalIgnores ./source;
 in
   "use ${source} here"
 ```
+
+## Usage
+
+The `default.nix` exports (among other things) three functions:
+
+    gitignoreFilterSourcePure "ignore-this\nignore-that\n" ./source
+        # This doesn't read the ./source/.gitignore
+
+    gitignoreFilterSource' "ignore-this\nignore-that\n" ./source
+        # This one does.
+
+    gitignoreFilterSource ./source
+        # The one stop shop for all your ignoring needs.
+        # gitignoreFilterSource = gitignoreFilterSource' "";
 
 ### Known deviances from git's implementation
 
