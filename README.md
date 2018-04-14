@@ -40,24 +40,33 @@ let
     /that/**.html
   '';
 
-  source = gitignoreFilterSource' additionalIgnores ./source;
+  source = gitignoreSourceAux additionalIgnores ./source;
 in
   "use ${source} here"
 ```
 
 ## Usage
 
-The `default.nix` exports (among other things) three functions:
+The `default.nix` exports (among other things) six functions. Three of these are:
 
-    gitignoreFilterSourcePure "ignore-this\nignore-that\n" ./source
+    gitignoreSourcePure "ignore-this\nignore-that\n" ./source
         # This doesn't read the ./source/.gitignore
 
-    gitignoreFilterSource' "ignore-this\nignore-that\n" ./source
-        # This one does.
+    gitignoreSourceAux "supplemental-ignores\n" ./source
+        # This one does read ./source/.gitignore and
+        # concats the auxiliary ignores.
 
-    gitignoreFilterSource ./source
+    gitignoreSource ./source
         # The one stop shop for all your ignoring needs.
         # gitignoreFilterSource = gitignoreFilterSource' "";
+
+They're all derived from the `Filter` functions with the first filter argument hardcoded as `(_: _: true)`:
+
+    gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
+    gitignoreSourceAux = gitignoreFilterSourceAux (_: _: true);
+    gitignoreSource = gitignoreFilterSource (_: _: true);
+
+The `filter` accepts the same arguments the `filterSource` function would pass to its filters.
 
 ### Known deviances from git's implementation
 

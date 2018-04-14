@@ -20,6 +20,9 @@ create-tree() { (
 
     mkdir -p 4-escapes
     touch 4-escapes/{{*,o{,_,__,?,}ther}.html,other.html{,\$,\$\$}}
+
+    mkdir -p 9-expected
+    touch 9-expected/{unfiltered,filtered-via-aux-{filter,ignore}}
 ); }
 
 list-sort() {
@@ -31,13 +34,29 @@ install -m644 "$(nix eval --raw -f test.nix ignores)" ./test-tree/.gitignore
 
 nix build -f test.nix git
 git="$(readlink result)"; rm result
-nix="$(nix eval -f test.nix nix --json | jq -r .)"
+nixi="$(nix eval -f test.nix nixIgnore  --json | jq -r .)"
+nixfa="$(nix eval -f test.nix nixFilterAux --json | jq -r .)"
 
-echo "$git"
-echo "$nix"
+# 2/3 of 9-expected/* paths should be printed
+
+echo "diffing:"
+echo "  $nixfa"
+echo "  $nixi"
 echo
-find $(find "$git" "$nix" -name '0-*')
+
+diff --color <(list-sort "$nixfa") <(list-sort "$nixi") || :
 echo
-diff --color <(list-sort "$git") <(list-sort "$nix") || :
+
+# a single 0-failing should be printed
+
+echo "diffing:"
+echo "  $git"
+echo "  $nixi"
+echo
+
+diff --color <(list-sort "$git") <(list-sort "$nixi") || :
+echo
+
+find $(find "$git" "$nixi" -name '0-*')
 
 rm -r test-tree

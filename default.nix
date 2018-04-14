@@ -71,12 +71,25 @@ in rec {
 
   gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
-  gitignoreFilterSourcePure = ign: root:
-    builtins.filterSource (gitignoreFilter ign root) root;
+  # filterSource derivatives
 
-  gitignoreFilterSource' = aux: root:
+  gitignoreFilterSourcePure = filter: ign: root:
+    builtins.filterSource
+      (name: type:
+        gitignoreFilter ign root name type
+        &&
+        filter name type
+      ) root;
+
+  gitignoreFilterSourceAux = filter: aux: root:
     let gitign = builtins.readFile "${toString root}/.gitignore";
-    in gitignoreFilterSourcePure (gitign + "\n" + aux) root;
+    in gitignoreFilterSourcePure filter (gitign + "\n" + aux) root;
 
-  gitignoreFilterSource = gitignoreFilterSource' "";
+  gitignoreFilterSource = filter: gitignoreFilterSourceAux filter "";
+
+  # "Filter"-less alternatives
+
+  gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
+  gitignoreSourceAux = gitignoreFilterSourceAux (_: _: true);
+  gitignoreSource = gitignoreFilterSource (_: _: true);
 }

@@ -28,7 +28,12 @@ let
 
   source = ./test-tree;
 
-  sourceNix = gitignoreFilterSource source;
+  sourceNixIgnore = gitignoreSource source;
+
+  sourceNixFilterAux = gitignoreFilterSourceAux
+    (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
+    "/9-expected/*ignore\n"
+    source;
 
   sourceGit = runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
@@ -50,6 +55,7 @@ in {
 
   ignores = builtins.toFile "nixgitignore-ignores" ignores;
 
-  nix = sourceNix;
-  git = sourceGit;
+  nixIgnore    = sourceNixIgnore;
+  nixFilterAux = sourceNixFilterAux;
+  git          = sourceGit;
 }
