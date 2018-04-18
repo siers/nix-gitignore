@@ -41,8 +41,18 @@ let
 
     cat ${builtins.toFile "nixgitignore-ignores" ignores} > .gitignore
     ${git}/bin/git init
-    ${git}/bin/git status --porcelain --ignored | \
-      sed -n '/^!! / { s/^...//; p }' | xargs -r rm -r
+    ${git}/bin/git status --porcelain --ignored -z | \
+      xargs -0rL1 sh -c '${gnugrep}/bin/grep -Po "^!! \K(.*)" <<< "$1" || :' "" | \
+      xargs -d'\n' -r rm -r
+
+    # okay, here's the translation
+    # "git status -z"         — because without it adds quoting
+    # "xargs -0rL1"           — delimit by NUL, don't run if empty, run a command per line
+    # "xargs -d'\n'"          — delimit by NL / '\n'
+
+    # "grep -Po '…\K' || :"   — This one's quite a mouthful! Okay…
+    #     Perl regexes, print Output, -K look behind without printing it
+    #     "|| :" don't trip up set -e, ":" is alias for true
 
     rm -r .git
     shopt -s dotglob; cp -r ./* ..
