@@ -1,4 +1,6 @@
 # nix-gitignore
+### (for nix 2.0 or higher)
+
 This implements primitive a gitignore filter for `builtins.filterSource` via
 translation to regexes. I just wanted to see how far I could get with the
 current approach and it turns out that I can get quite far.
