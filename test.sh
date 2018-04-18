@@ -5,11 +5,8 @@ set -euo pipefail
 create-tree() { (
     mkdir -p "$1"; cd "$1"
 
-    mkdir -p 0-failing
-    touch 0-failing/{\\,\\\\}
-
     mkdir -p 1-simple
-    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb}
+    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
 
     mkdir -p 2-negation
     touch 2-negation/{.keep,10,20,30,40,50}
@@ -29,6 +26,11 @@ list-sort() {
     find "$1" -printf '%P\n' | sort
 }
 
+verbose-find-diff() {
+    echo -e "diffing:\n  $1\n  $2\n"
+    diff --color <(list-sort "$1") <(list-sort "$2") || echo
+}
+
 create-tree test-tree
 install -m644 "$(nix eval --raw -f test.nix ignores)" ./test-tree/.gitignore
 
@@ -39,24 +41,7 @@ nixfa="$(nix eval -f test.nix nixFilterAux --json | jq -r .)"
 
 # 2/3 of 9-expected/* paths should be printed
 
-echo "diffing:"
-echo "  $nixfa"
-echo "  $nixi"
-echo
-
-diff --color <(list-sort "$nixfa") <(list-sort "$nixi") || :
-echo
-
-# a single 0-failing should be printed
-
-echo "diffing:"
-echo "  $git"
-echo "  $nixi"
-echo
-
-diff --color <(list-sort "$git") <(list-sort "$nixi") || :
-echo
-
-find $(find "$git" "$nixi" -name '0-*')
+verbose-find-diff "$nixfa" "$nixi"
+verbose-find-diff "$git" "$nixi"
 
 rm -r test-tree

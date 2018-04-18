@@ -3,13 +3,12 @@ with (import ./. { inherit lib; });
 
 let
   ignores = ''
-    0-failing/[\\]
-
     1-simple/1
     /1-simple/2
     /1-simple/[35^$[]]
     /1-simple/][\]]
     /1-simple/[^a]b
+    /1-simple/[\\]
 
     2-*/[^.]*
     !2-*/1?
