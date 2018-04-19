@@ -2,24 +2,24 @@
 
 set -euo pipefail
 
+touches() { (
+    mkdir -p "$1"; cd "$1"; shift
+    touch "$@"
+); }
+
 create-tree() { (
     mkdir -p "$1"; cd "$1"
 
-    mkdir -p 1-simple
-    touch 1-simple/{1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+    touches 1-simple         {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
 
-    mkdir -p 2-negation
-    touch 2-negation/{.keep,10,20,30,40,50}
+    touches 2-negation       {.keep,10,20,30,40,50}
 
-    mkdir -p 3-wildcards/html
-    touch 3-wildcards/{foo,bar}.html
-    touch 3-wildcards/html/{foo,bar}.html
+    touches 3-wildcards      {foo,bar,baz}.html
+    touches 3-wildcards/html {foo,bar,baz}.html
 
-    mkdir -p 4-escapes
-    touch 4-escapes/{{*,o{,_,__,?,}ther}.html,other.html{,\$,\$\$}}
+    touches 4-escapes        {{*,o{,_,__,?,}ther}.html,other.html{,\$,\$\$}}
 
-    mkdir -p 9-expected
-    touch 9-expected/{unfiltered,filtered-via-aux-{filter,ignore}}
+    touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore}}
 ); }
 
 list-sort() {
