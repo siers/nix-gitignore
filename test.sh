@@ -36,12 +36,9 @@ install -m644 "$(nix eval --raw -f test.nix ignores)" ./test-tree/.gitignore
 
 nix build -f test.nix git
 git="$(readlink result)"; rm result
-nixi="$(nix eval -f test.nix nixIgnore  --json | jq -r .)"
-nixfa="$(nix eval -f test.nix nixFilterAux --json | jq -r .)"
+nix="$(nix eval -f test.nix nix  --json | jq -r .)"
 
 # 2/3 of 9-expected/* paths should be printed
-
-verbose-find-diff "$nixfa" "$nixi"
-verbose-find-diff "$git" "$nixi"
+verbose-find-diff "$git" "$nix"
 
 rm -r test-tree

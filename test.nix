@@ -27,9 +27,7 @@ let
 
   source = ./test-tree;
 
-  sourceNixIgnore = gitignoreSource source;
-
-  sourceNixFilterAux = gitignoreFilterSourceAux
+  sourceNix = gitignoreFilterSourceAux
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
     "/9-expected/*ignore\n"
     source;
@@ -64,7 +62,6 @@ in {
 
   ignores = builtins.toFile "nixgitignore-ignores" ignores;
 
-  nixIgnore    = sourceNixIgnore;
-  nixFilterAux = sourceNixFilterAux;
-  git          = sourceGit;
+  nix = sourceNix;
+  git = sourceGit;
 }
