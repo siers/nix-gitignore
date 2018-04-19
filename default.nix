@@ -52,19 +52,24 @@ in rec {
           (split "(\\[([^\\\\]|\\\\.)+])" r));
 
       # regex -> regex
-      handleSlashPref = l:
+      handleSlashPrefix = l:
         let split = (match "^(/?)(.*)" l);
         in
           (if (elemAt split 0) == "/"
           then "^"
-          else "(^|.*/)")
-          + (elemAt split 1);
+          else "(^|.*/)"
+          ) + (elemAt split 1);
+
+      # regex -> regex
+      handleSlashSuffix = l:
+        let split = (match "^(.*)/$" l);
+        in if split != null then (elemAt split 0) + "($|/.*)" else l;
 
       # (regex -> regex) -> [regex bool] -> [regex bool]
       mapPat = f: l: [(f (head l)) (tail l)];
     in
       map (l: # `l' for "line"
-        mapPat (l: handleSlashPref (mapAroundCharclass substWildcards l))
+        mapPat (l: handleSlashSuffix (handleSlashPrefix (mapAroundCharclass substWildcards l)))
         (computeNegation l))
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));

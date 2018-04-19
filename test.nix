@@ -23,6 +23,8 @@ let
     4-*/o??ther.html
     4-*/o\?ther.html
     4-*/other.html$
+
+    5-*/
   '';
 
   source = ./test-tree;

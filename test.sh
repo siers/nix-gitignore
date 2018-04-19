@@ -19,6 +19,8 @@ create-tree() { (
 
     touches 4-escapes        {{*,o{,_,__,?,}ther}.html,other.html{,\$,\$\$}}
 
+    touches 5-directory      {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+
     touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore}}
 ); }
 
