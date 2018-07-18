@@ -21,7 +21,7 @@ create-tree() { (
 
     touches 5-directory      {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
 
-    touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore}}
+    touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore,filepath}}
 ); }
 
 list-sort() {
@@ -34,13 +34,19 @@ verbose-find-diff() {
 }
 
 create-tree test-tree
+
 install -m644 "$(nix eval --raw -f test.nix ignores)" ./test-tree/.gitignore
+install -m644 "$(nix eval --raw -f test.nix ignoresAux)" ./test-tree/aux.gitignore
+nix eval -f test.nix asserts | grep -qx true
 
 nix build -f test.nix git
 git="$(readlink result)"; rm result
 nix="$(nix eval -f test.nix nix  --json | jq -r .)"
 
-# 2/3 of 9-expected/* paths should be printed
+# 3/4 of 9-expected/* paths should be printed
 verbose-find-diff "$git" "$nix"
+
+# nix eval --json -f test.nix debug | jq .
+# nix eval --raw -f test.nix debugAux > debug-aux
 
 rm -r test-tree

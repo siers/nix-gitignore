@@ -82,6 +82,12 @@ in rec {
 
   # filterSource derivatives
 
+  gitignoreCompileAux = with builtins; aux: root:
+    let
+      aux_list = (if typeOf aux == "list" then aux else [aux]) ++ [(root + "/.gitignore")];
+      string_aux_list = map (a: if typeOf a == "path" then readFile a else a) aux_list;
+    in concatStringsSep "\n" string_aux_list;
+
   gitignoreFilterSourcePure = filter: ign: root:
     builtins.filterSource
       (name: type:
@@ -91,8 +97,7 @@ in rec {
       ) root;
 
   gitignoreFilterSourceAux = filter: aux: root:
-    let gitign = builtins.readFile "${toString root}/.gitignore";
-    in gitignoreFilterSourcePure filter (gitign + "\n" + aux) root;
+    gitignoreFilterSourcePure filter (gitignoreCompileAux aux root) root;
 
   gitignoreFilterSource = filter: gitignoreFilterSourceAux filter "";
 
