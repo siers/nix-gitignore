@@ -5,12 +5,14 @@
 # - zero or more directories. For example, "a/**/b" matches "a/b",
 # - "a/x/b", "a/x/y/b" and so on.
 
+with builtins;
+
 let
-  debug = a: builtins.trace a a;
-  tail = l: builtins.elemAt l ((builtins.length l) - 1);
+  debug = a: trace a a;
+  tail = l: elemAt l ((length l) - 1);
 in rec {
   # [["good/relative/source/file" true] ["bad.tmpfile" false]] -> root -> path
-  filterPattern = with builtins; patterns: root:
+  filterPattern = patterns: root:
     (name: _type:
       let
         relPath = lib.removePrefix ((toString root) + "/") name;
@@ -21,7 +23,7 @@ in rec {
     );
 
   # string -> [[regex bool]]
-  gitignoreToPatterns = with builtins; gitignore:
+  gitignoreToPatterns = gitignore:
     let
       # ignore -> bool
       isComment = i: (match "^(#.*|$)" i) != null;
@@ -48,7 +50,7 @@ in rec {
             ((escape special) ++ (escape escs) ++ [".*"  ".*" "[^/]*" "[^/]"]);
 
       # (regex -> regex) -> regex -> regex
-      mapAroundCharclass = with builtins; f: r: # rl = regex or list
+      mapAroundCharclass = f: r: # rl = regex or list
         let slightFix = replaceStrings ["\\]"] ["]"];
         in
           concatStringsSep ""
@@ -82,14 +84,15 @@ in rec {
 
   # filterSource derivatives
 
-  gitignoreCompileAux = with builtins; aux: root:
+  gitignoreCompileAux = aux: root:
     let
-      aux_list = (if typeOf aux == "list" then aux else [aux]) ++ [(root + "/.gitignore")];
-      string_aux_list = map (a: if typeOf a == "path" then readFile a else a) aux_list;
+      onPath = f: a: if typeOf a == "path" then f a else a;
+      aux_list = lib.toList aux ++ [(root + "/.gitignore")];
+      string_aux_list = map (onPath readFile) aux_list;
     in concatStringsSep "\n" string_aux_list;
 
   gitignoreFilterSourcePure = filter: ign: root:
-    builtins.filterSource
+    filterSource
       (name: type:
         gitignoreFilter ign root name type
         &&
