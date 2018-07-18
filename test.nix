@@ -75,7 +75,7 @@ in {
   debug = gitignoreToPatterns ignores;
   debugAux = gitignoreCompileAux "*foo*" source;
 
-  inherit asserts;
+  inherit asserts sourceNix_aux_string sourceNix_aux_arr_combined;
   ignores = builtins.toFile "nixgitignore-ignores" ignores;
   ignoresAux = builtins.toFile "nixgitignore-ignores-aux" ignoresAux;
 

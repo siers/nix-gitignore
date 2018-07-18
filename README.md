@@ -53,15 +53,13 @@ in
 The `default.nix` exports (among other things) six functions. Three of these are:
 
     gitignoreSourcePure "ignore-this\nignore-that\n" ./source
-        # This doesn't read the ./source/.gitignore
+    gitignoreSourcePure ["ignore-this\nignore-that\n", ~/.gitignore] ./source
+        # This doesn't read the ./source/.gitignore, but will read
+        # the ~/.gitignore, so it's not pure in the mathematical sense any more
 
     gitignoreSourceAux "supplemental-ignores\n" ./source
         # This one does read ./source/.gitignore and
         # concats the auxiliary ignores.
-
-    gitignoreSourceAux ["supplemental-ignores\n", ~/.gitignore] ./source
-        # You may supply multiple ignores and also paths(!= typeOf "string")
-        # that will be read and also concatenated.
 
     gitignoreSource ./source
         # The one stop shop for all your ignoring needs.

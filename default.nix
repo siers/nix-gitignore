@@ -82,8 +82,6 @@ in rec {
 
   gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
-  # filterSource derivatives
-
   gitignoreCompileAux = aux: root:
     let
       onPath = f: a: if typeOf a == "path" then f a else a;
@@ -91,16 +89,19 @@ in rec {
       string_aux_list = map (onPath readFile) aux_list;
     in concatStringsSep "\n" string_aux_list;
 
+  # filterSource derivatives
+
   gitignoreFilterSourcePure = filter: ign: root:
     filterSource
       (name: type:
-        gitignoreFilter ign root name type
+        gitignoreFilter (gitignoreCompileAux ign root) root name type
         &&
         filter name type
       ) root;
 
   gitignoreFilterSourceAux = filter: aux: root:
-    gitignoreFilterSourcePure filter (gitignoreCompileAux aux root) root;
+    let aux' = lib.toList aux ++ [(root + "/.gitignore")];
+    in gitignoreFilterSourcePure filter aux' root;
 
   gitignoreFilterSource = filter: gitignoreFilterSourceAux filter "";
 
