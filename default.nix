@@ -9,7 +9,7 @@ with builtins;
 
 let
   debug = a: trace a a;
-  tail = l: elemAt l ((length l) - 1);
+  last = l: elemAt l ((length l) - 1);
 in rec {
   # [["good/relative/source/file" true] ["bad.tmpfile" false]] -> root -> path
   filterPattern = patterns: root:
@@ -17,9 +17,9 @@ in rec {
       let
         relPath = lib.removePrefix ((toString root) + "/") name;
         matches = pair: (match (head pair) relPath) != null;
-        matched = map (pair: [(matches pair) (tail pair)]) patterns;
+        matched = map (pair: [(matches pair) (last pair)]) patterns;
       in
-        tail (tail ([[true true]] ++ (filter head matched)))
+        last (last ([[true true]] ++ (filter head matched)))
     );
 
   # string -> [[regex bool]]
@@ -72,7 +72,7 @@ in rec {
         in if split != null then (elemAt split 0) + "($|/.*)" else l;
 
       # (regex -> regex) -> [regex bool] -> [regex bool]
-      mapPat = f: l: [(f (head l)) (tail l)];
+      mapPat = f: l: [(f (head l)) (last l)];
     in
       map (l: # `l' for "line"
         mapPat (l: handleSlashSuffix (handleSlashPrefix (mapAroundCharclass substWildcards l)))
