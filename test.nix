@@ -1,7 +1,54 @@
 with (import <nixpkgs> {});
 with (import ./. { inherit lib; });
 
+{ source ? null }:
+
 let
+  testScript = ''
+    set -euo pipefail
+
+    list-sort() {
+        find "$1" -printf '%P\n' | sort
+    }
+
+    find-diff() {
+        # echo -e "diffing:\n  $1\n  $2\n"
+        diff --color <(list-sort "$1") <(list-sort "$2")
+    }
+
+    test-main() {
+      find-diff "$1" "$2"
+    }
+  '';
+
+  createTree = ''
+    touches() { (
+        mkdir -p "$1"; cd "$1"; shift
+        touch "$@"
+    ); }
+
+    create-tree() { (
+        mkdir -p "$1"; cd "$1"
+
+        touches 1-simple         {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+
+        touches 2-negation       {.keep,10,20,30,40,50}
+
+        touches 3-wildcards      {foo,bar,baz}.html
+        touches 3-wildcards/html {foo,bar,baz}.html
+
+        touches 4-escapes        {{*,o{,_,__,?,}ther}.html,other.html{,\$,\$\$}}
+
+        touches 5-directory      {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+
+        touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore,filepath}}
+    ); }
+
+    create-tree "$1"
+    cat ${builtins.toFile "nixgitignore-ignores" ignores} > "$1/.gitignore"
+    cat ${builtins.toFile "nixgitignore-ignores" ignoresAux} > "$1/aux.gitignore"
+  '';
+
   ignores = ''
     1-simple/1
     /1-simple/2
@@ -29,14 +76,18 @@ let
 
   ignoresAux = "/9-expected/*filepath\n";
 
-  source = ./test-tree;
+  sourceUnfiltered = (runCommand "test-tree" {} ''
+    mkdir -p $out; cd $out;
+    bash ${builtins.toFile "create-tree" createTree} test-tree
+   '');
+
+  sourceNix = gitignoreSource source;
 
   sourceNixAux = aux: gitignoreFilterSourceAux
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
     aux
     source;
 
-  sourceNix                   = sourceNix_aux_arr_combined;
   sourceNix_aux_string        = sourceNixAux "/9-expected/filtered*\n";
   sourceNix_aux_arr_string    = sourceNixAux ["/9-expected/filtered*\n"];
   sourceNix_aux_arr_combined  =
@@ -66,19 +117,19 @@ let
     cd $out; rm -rf tmp
   '';
 
-  asserts =
-    assert sourceNix_aux_string == sourceNix_aux_arr_string;
-    assert sourceNix_aux_string == sourceNix_aux_arr_combined;
-    true;
-
 in {
-  debug = gitignoreToPatterns ignores;
-  debugAux = gitignoreCompileAux "*foo*" source;
+  inherit sourceUnfiltered sourceNix sourceGit;
+  inherit testScript;
 
-  inherit asserts sourceNix_aux_string sourceNix_aux_arr_combined;
-  ignores = builtins.toFile "nixgitignore-ignores" ignores;
-  ignoresAux = builtins.toFile "nixgitignore-ignores-aux" ignoresAux;
-
-  nix = sourceNix;
-  git = sourceGit;
+  success =
+    let
+      test = runCommand "nix-gitignore-test" {} ''
+        mkdir -p $out; cd $out
+        ${testScript}
+        test-main ${sourceNix} ${sourceGit} && touch $out/success
+      '';
+    in
+      assert sourceNix_aux_string == sourceNix_aux_arr_string;
+      assert sourceNix_aux_string == sourceNix_aux_arr_combined;
+      test;
 }
