@@ -82,7 +82,7 @@ in rec {
 
   gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
-  gitignoreCompileAux = aux: root:
+  gitignoreCompileIgnore = aux: root:
     let
       onPath = f: a: if typeOf a == "path" then f a else a;
       aux_list = lib.toList aux ++ [(root + "/.gitignore")];
@@ -94,7 +94,7 @@ in rec {
   gitignoreFilterSourcePure = filter: ign: root:
     filterSource
       (name: type:
-        gitignoreFilter (gitignoreCompileAux ign root) root name type
+        gitignoreFilter (gitignoreCompileIgnore ign root) root name type
         &&
         filter name type
       ) root;
