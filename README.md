@@ -1,18 +1,33 @@
 # nix-gitignore
-### (for nix 2.0 or higher)
+
+**for nix 2.0 or higher*
 
 This implements primitive a gitignore filter for `builtins.filterSource` via
 translation to regexes. I just wanted to see how far I could get with the
-current approach and it turns out that I can get quite far.
-
-I highly recommend taking a look at the test files
-[test.nix](https://github.com/siers/nix-gitignore/blob/master/test.nix) and
-[test.sh](https://github.com/siers/nix-gitignore/blob/master/test.sh)
-which show how closely the actual git implementation's being mimicked.
-If you find any deviances, please file an issue. I wouldn't be surprised that
-some inconsistencies would pop up if one tried to fuzz this.
+current approach and as it turns out that I can get quite far.
 
 Please add give this a star iff this project proves to be useful to you.
+
+* [Motivation](#motivation)
+* [Example](#example)
+* [Usage](#usage)
+* [Testing](#testing)
+* [Notes](#notes)
+
+## Motivation
+
+The motivation for this project is this: suppose you were developing a project
+and you wanted to use it with nix with your local development version. You then
+might realize it has a `node_modules/` (or similar group of big, non-essential
+files) in it and after the seventh modification (and with that the seventh copy
+of your project) you'd fill all your available storage and would be no longer
+able to continue work.
+
+You could use `builtins.filterSource` and write a filter that
+maps paths to `true` and `false` values. _Sigh, what do they even mean?_
+(`false` means "to blacklist" and that's what each line in the ignore file does.)
+
+Well, now you don't have to and can use this filter instead.
 
 ## Example
 
@@ -72,6 +87,15 @@ They're all derived from the `Filter` functions with the first filter argument h
     gitignoreSource = gitignoreFilterSource (_: _: true);
 
 The `filter` accepts the same arguments the `filterSource` function would pass to its filters.
+
+## Testing
+
+I highly recommend taking a look at the test files
+[test.nix](https://github.com/siers/nix-gitignore/blob/master/test.nix) and
+[test.sh](https://github.com/siers/nix-gitignore/blob/master/test.sh)
+which show how closely the actual git implementation's being mimicked.
+If you find any deviances, please file an issue. I wouldn't be surprised that
+some inconsistencies would pop up if one tried to fuzz this.
 
 ## Notes
 
