@@ -1,6 +1,6 @@
 # nix-gitignore
 
-**for nix 2.0 or higher*
+(for nix 2.0 or higher)
 
 This implements primitive a gitignore filter for `builtins.filterSource` via
 translation to regexes. I just wanted to see how far I could get with the
@@ -16,18 +16,11 @@ Please add give this a star iff this project proves to be useful to you.
 
 ## Motivation
 
-The motivation for this project is this: suppose you were developing a project
-and you wanted to use it with nix with your local development version. You then
-might realize it has a `node_modules/` (or similar group of big, non-essential
-files) in it and after the seventh modification (and with that the seventh copy
-of your project) you'd fill all your available storage and would be no longer
-able to continue work.
-
-You could use `builtins.filterSource` and write a filter that
-maps paths to `true` and `false` values. _Sigh, what do they even mean?_
-(`false` means "to blacklist" and that's what each line in the ignore file does.)
-
-Well, now you don't have to and can use this filter instead.
+If you want to deploy your code from the development directory,
+it would make sense to clean out the development/tmp/cache files before copying
+your project's source to the nix store. The set of development files you'll
+want to clean is likely the same one your gitignore patterns match, so
+this is why this is useful.
 
 ## Example
 
@@ -68,17 +61,18 @@ in
 The `default.nix` exports (among other things) six functions. Three of these are:
 
     gitignoreSourcePure "ignore-this\nignore-that\n" ./source
+        # Use this string as the gitignore file.
+
     gitignoreSourcePure ["ignore-this\nignore-that\n", ~/.gitignore] ./source
-        # This doesn't read the ./source/.gitignore, but will read
-        # the ~/.gitignore, so it's not pure in the mathematical sense any more
+        # It also accepts a list (of strings and paths) that will be concatenated
+        # once the paths are turned to strings via readFile.
 
     gitignoreSourceAux "supplemental-ignores\n" ./source
-        # This one does read ./source/.gitignore and
-        # concats the auxiliary ignores.
+        # This one reads ./source/.gitignore and concats the auxiliary ignores.
 
     gitignoreSource ./source
         # The one stop shop for all your ignoring needs.
-        # gitignoreFilterSource = gitignoreFilterSource' "";
+        # gitignoreSource = gitignoreSourceAux "";
 
 They're all derived from the `Filter` functions with the first filter argument hardcoded as `(_: _: true)`:
 
@@ -87,6 +81,11 @@ They're all derived from the `Filter` functions with the first filter argument h
     gitignoreSource = gitignoreFilterSource (_: _: true);
 
 The `filter` accepts the same arguments the `filterSource` function would pass to its filters.
+Thus `fn: gitignoreFilterSourcePure fn ""` is extensionally equivalent to `filterSource`.
+
+If you want to make your own filter from scratch, you may use
+
+    gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
 ## Testing
 
@@ -96,10 +95,3 @@ I highly recommend taking a look at the test files
 which show how closely the actual git implementation's being mimicked.
 If you find any deviances, please file an issue. I wouldn't be surprised that
 some inconsistencies would pop up if one tried to fuzz this.
-
-## Notes
-
-There was a apparent deviance, but that turned out not to be a
-bug in the ignoring mechanisms, but the ignored file removal mechanism due to
-a combination of `xargs` and `git status` quoting issues,
-which have been fixed in [test.nix](https://github.com/siers/nix-gitignore/blob/553d394ba07fefc5a89e2d6a645b895419271060/test.nix#L42-L46).
