@@ -3,7 +3,8 @@
 set -euo pipefail
 
 source="$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree"
-rm -r test-tree; cp --no-preserve=all -r "$source" .
+rm -rf test-tree; cp --no-preserve=all -r "$source" .
+trap 'rm -r test-tree result' EXIT
 
 test=$(nix-build --no-out-link -E '(import ./test.nix { source = ./test-tree; }).success')
 
