@@ -91,8 +91,7 @@ in rec {
   gitignoreCompileIgnore = aux: root:
     let
       onPath = f: a: if typeOf a == "path" then f a else a;
-      aux_list = lib.toList aux ++ [(root + "/.gitignore")];
-      string_aux_list = map (onPath readFile) aux_list;
+      string_aux_list = map (onPath readFile) (lib.toList aux);
     in concatStringsSep "\n" string_aux_list;
 
   # filterSource derivatives

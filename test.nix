@@ -83,6 +83,9 @@ let
 
   sourceNix = gitignoreSource source;
 
+  sourceNix_all               = builtins.filterSource (_: _: true) source;
+  sourceNix_pure              = gitignoreSourcePure [] source;
+
   sourceNixAux = aux: gitignoreFilterSourceAux
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
     aux
@@ -129,6 +132,7 @@ in {
         test-main ${sourceNix} ${sourceGit} && touch $out/success
       '';
     in
+      assert sourceNix_all == sourceNix_pure;
       assert sourceNix_aux_string == sourceNix_aux_arr_string;
       assert sourceNix_aux_string == sourceNix_aux_arr_combined;
       test;
