@@ -94,19 +94,20 @@ in rec {
       string_aux_list = map (onPath readFile) (lib.toList aux);
     in concatStringsSep "\n" string_aux_list;
 
+  gitignoreFilterPure = filter: ign: root: name: type:
+    gitignoreFilter (gitignoreCompileIgnore ign root) root name type
+    && filter name type;
+
+  withGitignoreFile = aux: root:
+    lib.toList aux ++ [(root + "/.gitignore")];
+
   # filterSource derivatives
 
   gitignoreFilterSourcePure = filter: ign: root:
-    filterSource
-      (name: type:
-        gitignoreFilter (gitignoreCompileIgnore ign root) root name type
-        &&
-        filter name type
-      ) root;
+    filterSource (gitignoreFilterPure filter ign root) root;
 
   gitignoreFilterSourceAux = filter: aux: root:
-    let aux' = lib.toList aux ++ [(root + "/.gitignore")];
-    in gitignoreFilterSourcePure filter aux' root;
+    gitignoreFilterSourcePure filter (withGitignoreFile aux root) root;
 
   gitignoreFilterSource = filter: gitignoreFilterSourceAux filter "";
 
