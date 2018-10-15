@@ -1,4 +1,4 @@
-{ lib }:
+{ lib, runCommand }:
 
 # An interesting bit from the gitignore(5):
 # - A slash followed by two consecutive asterisks then a slash matches
@@ -88,6 +88,7 @@ in rec {
 
   gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
+  # string|[string|file] (→ [string|file] → [string]) -> string
   gitignoreCompileIgnore = aux: root:
     let
       onPath = f: a: if typeOf a == "path" then f a else a;
@@ -98,8 +99,39 @@ in rec {
     gitignoreFilter (gitignoreCompileIgnore ign root) root name type
     && filter name type;
 
+  # rootPath → gitignoresConcatenated
+  compileRecursiveGitignore = root:
+    let
+      dirOrIgnore = file: type: baseNameOf file == ".gitignore" || type == "directory";
+      ignores = builtins.filterSource dirOrIgnore root;
+    in
+      runCommand "${baseNameOf root}-recursive-gitignore" {} ''
+        cd ${ignores}
+
+        find -type f -exec sh -c '
+          rel="$(realpath --relative-to=. "$(dirname "$1")")/"
+          if [ "$rel" = "./" ]; then rel=""; fi
+
+          awk -v prefix="$rel" -v root="$1" -v top="$(test -z "$rel" && echo 1)" "
+            BEGIN { print \"# \"root }
+
+            /^[^\/]/ {
+              if (top) { middle = \"\" } else { middle = \"**/\" }
+              print prefix middle \$0
+            }
+
+            /^\// {
+              if (!top) sub(/^\//, \"\")
+              print prefix\$0
+            }
+
+            END { print \"\" }
+          " "$1"
+        ' sh {} \; > $out
+      '';
+
   withGitignoreFile = aux: root:
-    lib.toList aux ++ [(root + "/.gitignore")];
+    lib.toList aux ++ [(readFile (compileRecursiveGitignore root))];
 
   # filterSource derivatives
 

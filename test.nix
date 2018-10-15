@@ -1,5 +1,5 @@
 with (import <nixpkgs> {});
-with (import ./. { inherit lib; });
+with (callPackage ./. {});
 
 { source ? null }:
 
@@ -41,12 +41,17 @@ let
 
         touches 5-directory      {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
 
+        touches 6-recursive      a b xbx c
+        touches 6-recursive/dir  a b xbx c
+
         touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore,filepath}}
     ); }
 
     create-tree "$1"
+
     cat ${builtins.toFile "nixgitignore-ignores" ignores} > "$1/.gitignore"
     cat ${builtins.toFile "nixgitignore-ignores" ignoresAux} > "$1/aux.gitignore"
+    cat ${builtins.toFile "nixgitignore-ignores" ignoresRecursive} > "$1/6-recursive/.gitignore"
   '';
 
   ignores = ''
@@ -75,6 +80,7 @@ let
   '';
 
   ignoresAux = "/9-expected/*filepath\n";
+  ignoresRecursive = "*b*\n/c\n";
 
   sourceUnfiltered = (runCommand "test-tree" {} ''
     mkdir -p $out; cd $out;
