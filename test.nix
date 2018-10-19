@@ -30,7 +30,9 @@ let
     create-tree() { (
         mkdir -p "$1"; cd "$1"
 
-        touches 1-simple         {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+        touches 1-simpl          {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\,simple-test}
+        touches 1-simpl/1-simpl  {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+        touches 1-xxxxx/1-simpl  {1,2}
 
         touches 2-negation       {.keep,10,20,30,40,50}
 
@@ -44,6 +46,10 @@ let
         touches 6-recursive      a b xbx c
         touches 6-recursive/dir  a b xbx c
 
+        touches 6-recursive/1-simpl          {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\,simple-test}
+        touches 6-recursive/1-simpl/1-simpl  {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+        touches 6-recursive/1-xxxxx/1-simpl  {1,2}
+
         touches 9-expected       {unfiltered,filtered-via-aux-{filter,ignore,filepath}}
     ); }
 
@@ -55,12 +61,13 @@ let
   '';
 
   ignores = ''
-    1-simple/1
-    /1-simple/2
-    /1-simple/[35^$[]]
-    /1-simple/][\]]
-    /1-simple/[^a]b
-    /1-simple/[\\]
+    1-simpl/1
+    /1-simpl/2
+    /1-simpl/[35^$[]]
+    /1-simpl/][\]]
+    /1-simpl/[^a]b
+    /1-simpl/[\\]
+    simple*test
 
     2-*/[^.]*
     !2-*/1?
@@ -80,7 +87,18 @@ let
   '';
 
   ignoresAux = "/9-expected/*filepath\n";
-  ignoresRecursive = "*b*\n/c\n";
+  ignoresRecursive = ''
+    *b*
+    /c
+
+    1-simpl/1
+    /1-simpl/2
+    /1-simpl/[35^$[]]
+    /1-simpl/][\]]
+    /1-simpl/[^a]b
+    /1-simpl/[\\]
+    simple*test
+  '';
 
   sourceUnfiltered = (runCommand "test-tree" {} ''
     mkdir -p $out; cd $out;
@@ -129,6 +147,10 @@ let
 in {
   inherit sourceUnfiltered sourceNix sourceGit;
   inherit testScript;
+
+  # pipe through jq (or jq -r) to see prettified output
+  debug_compiled = builtins.toJSON (compileRecursiveGitignore source);
+  debug_patterns = builtins.toJSON (gitignoreToPatterns (compileRecursiveGitignore source));
 
   success =
     let

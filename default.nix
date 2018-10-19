@@ -65,9 +65,12 @@ in rec {
 
       # regex -> regex
       handleSlashPrefix = l:
-        let split = (match "^(/?)(.*)" l);
+        let
+          split = (match "^(/?)(.*)" l);
+          findSlash = l: if (match ".+/.+" l) != null then "" else l;
+          hasSlash = mapAroundCharclass findSlash l != l;
         in
-          (if (elemAt split 0) == "/"
+          (if (elemAt split 0) == "/" || hasSlash
           then "^"
           else "(^|.*/)"
           ) + (elemAt split 1);
@@ -77,7 +80,7 @@ in rec {
         let split = (match "^(.*)/$" l);
         in if split != null then (elemAt split 0) + "($|/.*)" else l;
 
-      # (regex -> regex) -> [regex bool] -> [regex bool]
+      # (regex -> regex) -> [regex, bool] -> [regex, bool]
       mapPat = f: l: [(f (head l)) (last l)];
     in
       map (l: # `l' for "line"
@@ -104,7 +107,7 @@ in rec {
     let
       dirOrIgnore = file: type: baseNameOf file == ".gitignore" || type == "directory";
       ignores = builtins.filterSource dirOrIgnore root;
-    in
+    in readFile (
       runCommand "${baseNameOf root}-recursive-gitignore" {} ''
         cd ${ignores}
 
@@ -128,10 +131,10 @@ in rec {
             END { print \"\" }
           " "$1"
         ' sh {} \; > $out
-      '';
+      '');
 
   withGitignoreFile = aux: root:
-    lib.toList aux ++ [(readFile (compileRecursiveGitignore root))];
+    lib.toList aux ++ [(compileRecursiveGitignore root)];
 
   # filterSource derivatives
 
