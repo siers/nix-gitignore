@@ -108,7 +108,7 @@ let
     cp -r ${source}/* .; chmod -R u+w .
 
     cat ${builtins.toFile "nixgitignore-ignores" ignores} > .gitignore
-    ${git}/bin/git init
+    ${git}/bin/git init > /dev/null
     ${git}/bin/git status --porcelain --ignored -z | \
       xargs -0rL1 sh -c '${gnugrep}/bin/grep -Po "^!! \K(.*)" <<< "$1" || :' "" | \
       xargs -d'\n' -r rm -r
@@ -131,6 +131,7 @@ in {
   inherit sourceUnfiltered sourceNix sourceGit;
   inherit testScript;
 
+  # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree" .
   # nix eval --raw '(((import ./test.nix { source = ./test-tree; }).debug_compiled))' | jq -r .
   debug_compiled = builtins.toJSON (compileRecursiveGitignore source);
   # nix eval '(((import ./test.nix { source = ./test-tree; }).debug_patterns))' | jq -r . | jq .
