@@ -52,8 +52,8 @@ in rec {
           escape = s: map (c: "\\" + c) (chars s);
         in
           replaceStrings
-            ((chars special)  ++ (escape escs) ++ ["**/" "**" "*"     "?"])
-            ((escape special) ++ (escape escs) ++ [".*"  ".*" "[^/]*" "[^/]"]);
+            ((chars special)  ++ (escape escs) ++ ["**/"    "**" "*"     "?"])
+            ((escape special) ++ (escape escs) ++ ["(.*/|)" ".*" "[^/]*" "[^/]"]);
 
       # (regex -> regex) -> regex -> regex
       mapAroundCharclass = f: r: # rl = regex or list

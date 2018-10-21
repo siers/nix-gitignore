@@ -36,8 +36,8 @@ let
 
         touches 2-negation       {.keep,10,20,30,40,50,60,70}
 
-        touches 3-wildcards      {foo,bar,baz}.html
-        touches 3-wildcards/html {foo,bar,baz}.html
+        touches 3-wildcards      {foo,bar,bbar,baz}.html
+        touches 3-wildcards/html {foo,bar,bbar,baz}.html
 
         touches 4-escapes        {{*,o{,_,__,?,}ther}.html,other.html{,\$,\$\$}}
 
