@@ -102,6 +102,10 @@ in rec {
     gitignoreFilter (gitignoreCompileIgnore ign root) root name type
     && filter name type;
 
+  # This is a very hacky way of programming this!
+  # A better way would be to reuse existing filtering by making multiple gitignore functions per each root.
+  # Then for each file find the set of roots with gitignores (and functions).
+  # This would make gitignoreFilterSource very different from gitignoreFilterPure.
   # rootPath → gitignoresConcatenated
   compileRecursiveGitignore = root:
     let
