@@ -31,8 +31,9 @@ let
         mkdir -p "$1"; cd "$1"
 
         touches 1-simpl          {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\,simple-test}
-        touches 1-simpl/1-simpl  {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
+        touches 1-simpl/1-simpl  {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\,simpletest}
         touches 1-xxxxx/1-simpl  {1,2}
+        touch {,1-simpl/}char-class-pathalogic
 
         touches 2-negation       {.keep,10,20,30,40,50,60,70}
 
@@ -62,6 +63,9 @@ let
     /1-simpl/[^a]b
     /1-simpl/[\\]
     simple*test
+
+    # [^b/]har-class-pathalogic
+    # this fails, but is pathalogic, so I won't cover it
 
     2-*/[^.]*
     !2-*/1?
