@@ -34,7 +34,7 @@ let
         touches 1-simpl/1-simpl  {1,2,3,4,5,^,$,^$,$^,[,[[,],]],]]],ab,bb,\\,\\\\}
         touches 1-xxxxx/1-simpl  {1,2}
 
-        touches 2-negation       {.keep,10,20,30,40,50}
+        touches 2-negation       {.keep,10,20,30,40,50,60,70}
 
         touches 3-wildcards      {foo,bar,baz}.html
         touches 3-wildcards/html {foo,bar,baz}.html
@@ -66,6 +66,7 @@ let
     2-*/[^.]*
     !2-*/1?
     !2-*/30
+    !/2-*/70
     !/40
     !50
 
