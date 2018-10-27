@@ -109,9 +109,8 @@ let
 
   sourceGit = runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
-    cp -r ${source}/* .; chmod -R u+w .
+    cp -r ${source}/{*,.gitignore} .; chmod -R u+w .
 
-    cat ${builtins.toFile "nixgitignore-ignores" ignores} > .gitignore
     ${git}/bin/git init > /dev/null
     ${git}/bin/git status --porcelain --ignored -z | \
       xargs -0rL1 sh -c '${gnugrep}/bin/grep -Po "^!! \K(.*)" <<< "$1" || :' "" | \
