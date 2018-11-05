@@ -3,10 +3,7 @@
 (for nix 2.0 or higher)
 
 This implements primitive a gitignore filter for `builtins.filterSource` via
-translation to regexes. I just wanted to see how far I could get with the
-current approach and as it turns out that I can get quite far.
-
-Please add give this a star iff this project proves to be useful to you.
+translation to regexes. Please add give this a star iff this project proves to be useful to you.
 
 * [Motivation](#motivation)
 * [Example](#example)
@@ -51,37 +48,36 @@ let
     /that/**.html
   '';
 
-  source = gitignoreSourceAux additionalIgnores ./source;
+  source = gitignoreSource additionalIgnores ./source;
 in
   "use ${source} here"
 ```
 
 ## Usage
 
-The `default.nix` exports (among other things) six functions. Three of these are:
+The `default.nix` exports (among other things) four functions. Three of these are:
+
+    gitignoreSource [] ./source
+        # Simplest version
+
+    gitignoreSource "supplemental-ignores\n" ./source
+        # This one reads the ./source/.gitignore and concats the auxiliary ignores
 
     gitignoreSourcePure "ignore-this\nignore-that\n" ./source
-        # Use this string as the gitignore file.
+        # Use this string as gitignore, don't read ./source/.gitignore.
 
     gitignoreSourcePure ["ignore-this\nignore-that\n", ~/.gitignore] ./source
         # It also accepts a list (of strings and paths) that will be concatenated
         # once the paths are turned to strings via readFile.
 
-    gitignoreSourceAux "supplemental-ignores\n" ./source
-        # This one reads ./source/.gitignore and concats the auxiliary ignores.
-
-    gitignoreSource ./source
-        # The one stop shop for all your ignoring needs.
-        # gitignoreSource = gitignoreSourceAux "";
-
 They're all derived from the `Filter` functions with the first filter argument hardcoded as `(_: _: true)`:
 
     gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
-    gitignoreSourceAux = gitignoreFilterSourceAux (_: _: true);
     gitignoreSource = gitignoreFilterSource (_: _: true);
 
 The `filter` accepts the same arguments the `filterSource` function would pass to its filters.
 Thus `fn: gitignoreFilterSourcePure fn ""` is extensionally equivalent to `filterSource`.
+The file is blacklisted iff it's blacklisted by either your filter or the gitignoreFilter.
 
 If you want to make your own filter from scratch, you may use
 
@@ -93,5 +89,5 @@ I highly recommend taking a look at the test files
 [test.nix](https://github.com/siers/nix-gitignore/blob/master/test.nix) and
 [test.sh](https://github.com/siers/nix-gitignore/blob/master/test.sh)
 which show how closely the actual git implementation's being mimicked.
-If you find any deviances, please file an issue. I wouldn't be surprised that
-some inconsistencies would pop up if one tried to fuzz this.
+If you find any deviances, please file an issue. Even though it probably works 99% of the time,
+the pattern `[^b/]har-class-pathalogic` is the only one found that doesn't work like in git.

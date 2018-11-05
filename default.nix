@@ -92,14 +92,14 @@ in rec {
   gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
   # string|[string|file] (→ [string|file] → [string]) -> string
-  gitignoreCompileIgnore = aux: root:
+  gitignoreCompileIgnore = file_str_patterns: root:
     let
       onPath = f: a: if typeOf a == "path" then f a else a;
-      string_aux_list = map (onPath readFile) (lib.toList aux);
-    in concatStringsSep "\n" string_aux_list;
+      str_patterns = map (onPath readFile) (lib.toList file_str_patterns);
+    in concatStringsSep "\n" str_patterns;
 
-  gitignoreFilterPure = filter: ign: root: name: type:
-    gitignoreFilter (gitignoreCompileIgnore ign root) root name type
+  gitignoreFilterPure = filter: patterns: root: name: type:
+    gitignoreFilter (gitignoreCompileIgnore patterns root) root name type
     && filter name type;
 
   # This is a very hacky way of programming this!
@@ -145,22 +145,24 @@ in rec {
         ' sh {} \; > $out
       '');
 
-  withGitignoreFile = aux: root:
-    lib.toList aux ++ [(compileRecursiveGitignore root)];
+  withGitignoreFile = patterns: root:
+    lib.toList patterns ++ [(compileRecursiveGitignore root)];
 
   # filterSource derivatives
 
-  gitignoreFilterSourcePure = filter: ign: root:
-    filterSource (gitignoreFilterPure filter ign root) root;
+  gitignoreFilterSourcePure = filter: patterns: root:
+    filterSource (gitignoreFilterPure filter patterns root) root;
 
-  gitignoreFilterSourceAux = filter: aux: root:
-    gitignoreFilterSourcePure filter (withGitignoreFile aux root) root;
-
-  gitignoreFilterSource = filter: gitignoreFilterSourceAux filter "";
+  gitignoreFilterSource = filter: patterns: root:
+    gitignoreFilterSourcePure filter (withGitignoreFile patterns root) root;
 
   # "Filter"-less alternatives
 
   gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
-  gitignoreSourceAux = gitignoreFilterSourceAux (_: _: true);
-  gitignoreSource = gitignoreFilterSource (_: _: true);
+  gitignoreSource = patterns: let type = typeOf patterns; in
+    if (type == "string" && pathExists patterns) || type == "path"
+    then throw
+      "type error in gitignoreSource(patterns -> source -> path), "
+      "use [] or \"\" if there are no additional patterns"
+    else gitignoreFilterSource (_: _: true) patterns;
 }

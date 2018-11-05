@@ -92,12 +92,12 @@ let
     bash ${builtins.toFile "create-tree" createTree} test-tree
    '');
 
-  sourceNix = gitignoreSource source;
+  sourceNix = gitignoreSource [] source;
 
   sourceNix_all               = builtins.filterSource (_: _: true) source;
   sourceNix_pure              = gitignoreSourcePure [] source;
 
-  sourceNixAux = aux: gitignoreFilterSourceAux
+  sourceNixAux = aux: gitignoreFilterSource
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
     aux
     source;
@@ -130,15 +130,17 @@ let
     cd $out; rm -rf tmp
   '';
 
-in {
+  typeErrorOrDeprecationWarning = gitignoreSource source;
+
+in with builtins; {
   inherit sourceUnfiltered sourceNix sourceGit;
   inherit testScript;
 
   # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree" .
   # nix eval --raw '(((import ./test.nix { source = ./test-tree; }).debug_compiled))' | jq -r .
-  debug_compiled = builtins.toJSON (compileRecursiveGitignore source);
+  debug_compiled = toJSON (compileRecursiveGitignore source);
   # nix eval '(((import ./test.nix { source = ./test-tree; }).debug_patterns))' | jq -r . | jq .
-  debug_patterns = builtins.toJSON (gitignoreToPatterns (compileRecursiveGitignore source));
+  debug_patterns = toJSON (gitignoreToPatterns (compileRecursiveGitignore source));
 
   success =
     let
@@ -151,5 +153,6 @@ in {
       assert sourceNix_all == sourceNix_pure;
       assert sourceNix_aux_string == sourceNix_aux_arr_string;
       assert sourceNix_aux_string == sourceNix_aux_arr_combined;
+      assert (tryEval typeErrorOrDeprecationWarning).success == false;
       test;
 }
