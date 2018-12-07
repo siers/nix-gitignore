@@ -11,7 +11,7 @@ let
   debug = a: trace a a;
   last = l: elemAt l ((length l) - 1);
 
-  throwIfOldNix = let required = "2.0.0"; in
+  throwIfOldNix = let required = "2.0"; in
     if compareVersions nixVersion required == -1
     then throw "nix (v${nixVersion} =< v${required}) is too old for nix-gitignore"
     else true;
