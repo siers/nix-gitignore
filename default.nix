@@ -53,7 +53,7 @@ in rec {
         in
           replaceStrings
             ((chars special)  ++ (escape escs) ++ ["**/"    "**" "*"     "?"])
-            ((escape special) ++ (escape escs) ++ ["(.*/|)" ".*" "[^/]*" "[^/]"]);
+            ((escape special) ++ (escape escs) ++ ["(.*/)?" ".*" "[^/]*" "[^/]"]);
 
       # (regex -> regex) -> regex -> regex
       mapAroundCharclass = f: r: # rl = regex or list
