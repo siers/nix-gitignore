@@ -51,7 +51,9 @@ let
 
     cat ${builtins.toFile "nixgitignore-ignores" ignores} > "$1/.gitignore"
     cat ${builtins.toFile "nixgitignore-ignores" ignoresAux} > "$1/aux.gitignore"
+  '';
 
+  createTreeRecursive = createTree + "\n" + ''
     cp -r "$1" "$1" 2>&1 | grep -vq 'cannot copy a directory, .*into itself' || :
   '';
 
@@ -87,15 +89,25 @@ let
 
   ignoresAux = "/9-expected/*filepath\n";
 
-  sourceUnfiltered = (runCommand "test-tree" {} ''
+  createSourceTree = createTree: (runCommand "test-tree" {} ''
     mkdir -p $out; cd $out;
     bash ${builtins.toFile "create-tree" createTree} test-tree
    '');
+
+  # source is a copy of sourceUnfiltered, which lives in the nix store
+  sourceUnfiltered = createSourceTree createTree;
+  sourceUnfilteredRecursive = createSourceTree createTreeRecursive;
+
+  sourceRecursive = source + "-recursive";
+
+  # basic
 
   sourceNix = gitignoreSource [] source;
 
   sourceNix_all               = builtins.filterSource (_: _: true) source;
   sourceNix_pure              = gitignoreSourcePure [] source;
+
+  # aux
 
   sourceNixAux = aux: gitignoreFilterSource
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
@@ -107,7 +119,15 @@ let
   sourceNix_aux_arr_combined  =
     sourceNixAux ["/9-expected/*ignore\n" (source + "/aux.gitignore")];
 
-  sourceGit = runCommand "test-tree-git" {} ''
+  # recursive
+
+  sourceRecursiveNix = gitignoreFilterRecursiveSource [] sourceRecursive;
+  sourceRecursiveGit = sourceGitFrom sourceRecursive;
+
+  #
+
+  sourceGit = sourceGitFrom source;
+  sourceGitFrom = source: runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
     cp -r ${source}/{*,.gitignore} .; chmod -R u+w .
 
@@ -133,7 +153,7 @@ let
   typeErrorOrDeprecationWarning = gitignoreSource source;
 
 in with builtins; {
-  inherit sourceUnfiltered sourceNix sourceGit;
+  inherit sourceUnfiltered sourceUnfilteredRecursive sourceNix sourceGit;
   inherit testScript;
 
   # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree" .
@@ -153,6 +173,7 @@ in with builtins; {
       assert sourceNix_all == sourceNix_pure;
       assert sourceNix_aux_string == sourceNix_aux_arr_string;
       assert sourceNix_aux_string == sourceNix_aux_arr_combined;
+      #assert sourceRecursiveNix == sourceRecursiveGit;
       assert (tryEval typeErrorOrDeprecationWarning).success == false;
       test;
 }

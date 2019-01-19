@@ -146,6 +146,9 @@ in rec {
       '');
 
   withGitignoreFile = patterns: root:
+    lib.toList patterns ++ [(root + "/.gitignore")];
+
+  withRecursiveGitignoreFile = patterns: root:
     lib.toList patterns ++ [(compileRecursiveGitignore root)];
 
   # filterSource derivatives
@@ -156,6 +159,9 @@ in rec {
   gitignoreFilterSource = filter: patterns: root:
     gitignoreFilterSourcePure filter (withGitignoreFile patterns root) root;
 
+  gitignoreFilterRecursiveSource = filter: patterns: root:
+    gitignoreFilterSourcePure filter (withRecursiveGitignoreFile patterns root) root;
+
   # "Filter"-less alternatives
 
   gitignoreSourcePure = gitignoreFilterSourcePure (_: _: true);
@@ -165,4 +171,6 @@ in rec {
       "type error in gitignoreSource(patterns -> source -> path), "
       "use [] or \"\" if there are no additional patterns"
     else gitignoreFilterSource (_: _: true) patterns;
+
+  gitignoreRecursiveSource = gitignoreFilterSourcePure (_: _: true);
 }
