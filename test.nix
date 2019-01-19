@@ -4,7 +4,7 @@ with (callPackage ./. {});
 { source ? null }:
 
 let
-  testScript = ''
+  testLib = ''
     set -euo pipefail
 
     list-sort() {
@@ -121,7 +121,7 @@ let
 
   # recursive
 
-  sourceRecursiveNix = gitignoreFilterRecursiveSource [] sourceRecursive;
+  sourceRecursiveNix = gitignoreFilterRecursiveSource (_: _: true) [] sourceRecursive;
   sourceRecursiveGit = sourceGitFrom sourceRecursive;
 
   #
@@ -154,7 +154,7 @@ let
 
 in with builtins; {
   inherit sourceUnfiltered sourceUnfilteredRecursive sourceNix sourceGit;
-  inherit testScript;
+  inherit testLib;
 
   # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree" .
   # nix eval --raw '(((import ./test.nix { source = ./test-tree; }).debug_compiled))' | jq -r .
@@ -166,14 +166,15 @@ in with builtins; {
     let
       test = runCommand "nix-gitignore-test" {} ''
         mkdir -p $out; cd $out
-        ${testScript}
-        test-main ${sourceGit} ${sourceNix} && touch $out/success
+        ${testLib}
+        test-main ${sourceGit} ${sourceNix} && \
+        test-main ${sourceRecursiveGit} ${sourceRecursiveNix} && \
+        touch $out/success
       '';
     in
       assert sourceNix_all == sourceNix_pure;
       assert sourceNix_aux_string == sourceNix_aux_arr_string;
       assert sourceNix_aux_string == sourceNix_aux_arr_combined;
-      #assert sourceRecursiveNix == sourceRecursiveGit;
       assert (tryEval typeErrorOrDeprecationWarning).success == false;
       test;
 }
