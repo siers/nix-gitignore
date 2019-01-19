@@ -83,6 +83,14 @@ If you want to make your own filter from scratch, you may use
 
     gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
 
+#### `.gitignore` files in subdirectories
+
+If you wish to use a filter that would search for `.gitignore` files in subdirectories,
+just like git does by default, use this function.
+
+    gitignoreFilterRecursiveSource = filter: patterns: root:
+    gitignoreRecursiveSource = gitignoreFilterSourcePure (_: _: true);
+
 ## Testing
 
 I highly recommend taking a look at the test files
