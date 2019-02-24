@@ -21,6 +21,28 @@ this is why this is useful.
 
 ## Example
 
+This project has been included in [nixpkgs](https://github.com/NixOS/nixpkgs/) since 2019.02.18.
+and it should land in the `19.03` release, so you can start using it like this:
+
+```nix
+with (import <nixpkgs> {});
+
+let
+  additionalIgnores = ''
+    /this
+    /that/**.html
+  '';
+
+  source = nix-gitignore.gitignoreSource additionalIgnores ./source;
+in
+  "use ${source} here"
+```
+
+<details>
+<summary>Here's the `fetchFromGitHub` nix example if it's ever needed.</summary>
+
+### `fetchFromGitHub` example
+
 Replace the `rev` and `sha256` lines with the output of this command:
 
 ```bash
@@ -52,6 +74,7 @@ let
 in
   "use ${source} here"
 ```
+</details>
 
 ## Usage
 
