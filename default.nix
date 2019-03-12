@@ -172,5 +172,5 @@ in rec {
       "use [] or \"\" if there are no additional patterns"
     else gitignoreFilterSource (_: _: true) patterns;
 
-  gitignoreRecursiveSource = gitignoreFilterSourcePure (_: _: true);
+  gitignoreRecursiveSource = gitignoreFilterRecursiveSource (_: _: true);
 }
