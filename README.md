@@ -112,7 +112,8 @@ If you wish to use a filter that would search for `.gitignore` files in subdirec
 just like git does by default, use this function.
 
     gitignoreFilterRecursiveSource = filter: patterns: root:
-    gitignoreRecursiveSource = gitignoreFilterSourcePure (_: _: true);
+    gitignoreRecursiveSource = gitignoreFilterRecursiveSource (_: _: true);
+
 
 ## Testing
 
