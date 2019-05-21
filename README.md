@@ -89,7 +89,7 @@ The `default.nix` exports (among other things) four functions. Three of these ar
     gitignoreSourcePure "ignore-this\nignore-that\n" ./source
         # Use this string as gitignore, don't read ./source/.gitignore.
 
-    gitignoreSourcePure ["ignore-this\nignore-that\n", ~/.gitignore] ./source
+    gitignoreSourcePure ["ignore-this\nignore-that\n" ~/.gitignore] ./source
         # It also accepts a list (of strings and paths) that will be concatenated
         # once the paths are turned to strings via readFile.
 
