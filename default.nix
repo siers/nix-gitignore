@@ -145,10 +145,10 @@ in rec {
         ' sh {} \; > $out
       '');
 
-  withGitignoreFile = patterns: root:
-    lib.toList patterns ++ [(root + "/.gitignore")];
+  withGitIgnoredFilesAndDirs = patterns: root:
+    lib.toList patterns ++ [(root + "/.gitignore") (".git")];
 
-  withRecursiveGitignoreFile = patterns: root:
+  withRecursiveGitIgnoredFilesAndDirs = patterns: root:
     lib.toList patterns ++ [(compileRecursiveGitignore root)];
 
   # filterSource derivatives
@@ -157,10 +157,10 @@ in rec {
     filterSource (gitignoreFilterPure filter patterns root) root;
 
   gitignoreFilterSource = filter: patterns: root:
-    gitignoreFilterSourcePure filter (withGitignoreFile patterns root) root;
+    gitignoreFilterSourcePure filter (withGitIgnoredFilesAndDirs patterns root) root;
 
   gitignoreFilterRecursiveSource = filter: patterns: root:
-    gitignoreFilterSourcePure filter (withRecursiveGitignoreFile patterns root) root;
+    gitignoreFilterSourcePure filter (withRecursiveGitIgnoredFilesAndDirs patterns root) root;
 
   # "Filter"-less alternatives
 
