@@ -1,5 +1,4 @@
-# with (import <nixpkgs> {});
-with (import <nixos1803> {});
+with (import <nixpkgs> {});
 with (callPackage ./. {});
 
 { sourceUnfilteredNormal' ? null, sourceUnfilteredRecursive' ? null, sourceUnfilteredGitdir' ? null }:
@@ -132,15 +131,15 @@ let
   ignoresAux = "/9-expected/*filepath\n";
 
   createSourceTree = createTree: (runCommand "test-tree" {} ''
-    mkdir -p $out; cd $out;
-    bash ${builtins.toFile "create-tree" createTree} test-tree
+    mkdir -p $out;
+    bash ${builtins.toFile "create-tree" createTree} $out
    '');
 
   # sourceUnfilteredNormal' is a copy of sourceUnfilteredNormal, which lives in the nix store
-  sourceUnfilteredNormal     = createSourceTree createTreeNormal;
-  sourceUnfilteredRecursive  = createSourceTree createTreeRecursive;
-  sourceUnfilteredGitdir = createSourceTree createTreeGitdir;
-  sourceGitGitdir        = createSourceTree createTreeGitdirtestGit;
+  sourceUnfilteredNormal    = createSourceTree createTreeNormal;
+  sourceUnfilteredRecursive = createSourceTree createTreeRecursive;
+  sourceUnfilteredGitdir    = createSourceTree createTreeGitdir;
+  sourceGitGitdir           = createSourceTree createTreeGitdirtestGit;
 
   # basic
 
@@ -214,7 +213,7 @@ in with builtins; {
         ${testLib}
         test-main ${sourceGitNormal} ${sourceNixNormal} && \
         test-main ${sourceGitRecursive} ${sourceNixRecursive} && \
-        test-main "${sourceGitGitdir}/test-tree" ${sourceNixGitdir} && \
+        test-main ${sourceGitGitdir} ${sourceNixGitdir} && \
         touch $out/success
       '';
     in

@@ -6,9 +6,9 @@ trap 'rm -rf localtmp' EXIT
 rm -rf localtmp
 mkdir localtmp
 
-cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredNormal')/test-tree" localtmp/test-tree-normal
-cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredRecursive')/test-tree" localtmp/test-tree-recursive
-cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredGitdir')/test-tree" localtmp/test-tree-gitdir
+cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredNormal')" localtmp/test-tree-normal
+cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredRecursive')" localtmp/test-tree-recursive
+cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredGitdir')" localtmp/test-tree-gitdir
 
 # HACK:
 # fix error
