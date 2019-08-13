@@ -1,7 +1,7 @@
 with (import <nixpkgs> {});
 with (callPackage ./. {});
 
-{ source ? null }:
+{ sourceUnfilteredNormal' ? null, sourceUnfilteredRecursive' ? null }:
 
 let
   testLib = ''
@@ -21,7 +21,7 @@ let
     }
   '';
 
-  createTree = ''
+  createTreeNormal = ''
     touches() { (
         mkdir -p "$1"; cd "$1"; shift
         touch "$@"
@@ -53,7 +53,7 @@ let
     cat ${builtins.toFile "nixgitignore-ignores" ignoresAux} > "$1/aux.gitignore"
   '';
 
-  createTreeRecursive = createTree + "\n" + ''
+  createTreeRecursive = createTreeNormal + "\n" + ''
     cp -r "$1" "$1" 2>&1 | grep -vq 'cannot copy a directory, .*into itself' || :
   '';
 
@@ -94,39 +94,37 @@ let
     bash ${builtins.toFile "create-tree" createTree} test-tree
    '');
 
-  # source is a copy of sourceUnfiltered, which lives in the nix store
-  sourceUnfiltered = createSourceTree createTree;
-  sourceUnfilteredRecursive = createSourceTree createTreeRecursive;
-
-  sourceRecursive = source + "-recursive";
+  # sourceUnfilteredNormal' is a copy of sourceUnfilteredNormal, which lives in the nix store
+  sourceUnfilteredNormal     = createSourceTree createTreeNormal;
+  sourceUnfilteredRecursive  = createSourceTree createTreeRecursive;
 
   # basic
 
-  sourceNix = gitignoreSource [] source;
+  sourceNixNormal = gitignoreSource [] sourceUnfilteredNormal';
 
-  sourceNix_all               = builtins.filterSource (_: _: true) source;
-  sourceNix_pure              = gitignoreSourcePure [] source;
+  sourceNix_all               = builtins.filterSource (_: _: true) sourceUnfilteredNormal';
+  sourceNix_pure              = gitignoreSourcePure [] sourceUnfilteredNormal';
 
   # aux
 
   sourceNixAux = aux: gitignoreFilterSource
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
     aux
-    source;
+    sourceUnfilteredNormal';
 
   sourceNix_aux_string        = sourceNixAux "/9-expected/filtered*\n";
   sourceNix_aux_arr_string    = sourceNixAux ["/9-expected/filtered*\n"];
   sourceNix_aux_arr_combined  =
-    sourceNixAux ["/9-expected/*ignore\n" (source + "/aux.gitignore")];
+    sourceNixAux ["/9-expected/*ignore\n" (sourceUnfilteredNormal' + "/aux.gitignore")];
 
   # recursive
 
-  sourceRecursiveNix = gitignoreFilterRecursiveSource (_: _: true) [] sourceRecursive;
-  sourceRecursiveGit = sourceGitFrom sourceRecursive;
+  sourceNixRecursive = gitignoreFilterRecursiveSource (_: _: true) [] sourceUnfilteredRecursive';
+  sourceGitRecursive = sourceGitFrom sourceUnfilteredRecursive';
 
   #
 
-  sourceGit = sourceGitFrom source;
+  sourceGitNormal = sourceGitFrom sourceUnfilteredNormal';
   sourceGitFrom = source: runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
     cp -r ${source}/{*,.gitignore} .; chmod -R u+w .
@@ -150,25 +148,26 @@ let
     cd $out; rm -rf tmp
   '';
 
-  typeErrorOrDeprecationWarning = gitignoreSource source;
+  typeErrorOrDeprecationWarning = gitignoreSource sourceUnfilteredNormal';
 
 in with builtins; {
-  inherit sourceUnfiltered sourceUnfilteredRecursive sourceNix sourceGit;
+  inherit sourceUnfilteredNormal sourceGitNormal sourceNixNormal;
+  inherit sourceUnfilteredRecursive sourceGitRecursive sourceNixRecursive;
   inherit testLib;
 
-  # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree" .
-  # nix eval --raw '(((import ./test.nix { source = ./test-tree; }).debug_compiled))' | jq -r .
-  debug_compiled = toJSON (compileRecursiveGitignore source);
-  # nix eval '(((import ./test.nix { source = ./test-tree; }).debug_patterns))' | jq -r . | jq .
-  debug_patterns = toJSON (gitignoreToPatterns (compileRecursiveGitignore source));
+  # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredNormal')/test-tree" .
+  # nix eval --raw '(((import ./test.nix { sourceUnfilteredNormal' = ./test-tree; }).debug_compiled))' | jq -r .
+  debug_compiled = toJSON (compileRecursiveGitignore sourceUnfilteredNormal');
+  # nix eval '(((import ./test.nix { sourceUnfilteredNormal' = ./test-tree; }).debug_patterns))' | jq -r . | jq .
+  debug_patterns = toJSON (gitignoreToPatterns (compileRecursiveGitignore sourceUnfilteredNormal'));
 
   success =
     let
       test = runCommand "nix-gitignore-test" {} ''
         mkdir -p $out; cd $out
         ${testLib}
-        test-main ${sourceGit} ${sourceNix} && \
-        test-main ${sourceRecursiveGit} ${sourceRecursiveNix} && \
+        test-main ${sourceGitNormal} ${sourceNixNormal} && \
+        test-main ${sourceGitRecursive} ${sourceNixRecursive} && \
         touch $out/success
       '';
     in
