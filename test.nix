@@ -139,15 +139,15 @@ let
   sourceBeforeNormal    = createSourceTree createTreeNormal;
   sourceBeforeRecursive = createSourceTree createTreeRecursive;
   sourceBeforeGitdir    = createSourceTree createTreeGitdir;
-  sourceExpectedGitdir           = createSourceTree createTreeGitdirtestGit;
 
   # basic
 
   sourceActualNormal = gitignoreSource [] sourceBeforeNormal';
+  sourceActualRecursive = gitignoreFilterRecursiveSource (_: _: true) [] sourceBeforeRecursive';
   sourceActualGitdir = gitignoreSource [] sourceBeforeGitdir';
 
-  sourceActual_all               = builtins.filterSource (_: _: true) sourceBeforeNormal';
-  sourceActual_pure              = gitignoreSourcePure [] sourceBeforeNormal';
+  sourceActual_all  = builtins.filterSource (_: _: true) sourceBeforeNormal';
+  sourceActual_pure = gitignoreSourcePure [] sourceBeforeNormal';
 
   # aux
 
@@ -161,14 +161,8 @@ let
   sourceActual_aux_arr_combined  =
     sourceActualAux ["/9-expected/*ignore\n" (sourceBeforeNormal' + "/aux.gitignore")];
 
-  # recursive
-
-  sourceActualRecursive = gitignoreFilterRecursiveSource (_: _: true) [] sourceBeforeRecursive';
-  sourceExpectedRecursive = sourceExpectedFrom sourceBeforeRecursive';
-
   #
 
-  sourceExpectedNormal = sourceExpectedFrom sourceBeforeNormal';
   sourceExpectedFrom = source: runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
     cp -r ${source}/{*,.gitignore} .; chmod -R u+w .
@@ -191,6 +185,10 @@ let
     shopt -s dotglob; cp -r ./* ..
     cd $out; rm -rf tmp
   '';
+
+  sourceExpectedNormal    = sourceExpectedFrom sourceBeforeNormal';
+  sourceExpectedRecursive = sourceExpectedFrom sourceBeforeRecursive';
+  sourceExpectedGitdir    = createSourceTree createTreeGitdirtestGit;
 
   typeErrorOrDeprecationWarning = gitignoreSource sourceBeforeNormal';
 
