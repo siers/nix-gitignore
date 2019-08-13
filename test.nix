@@ -1,7 +1,8 @@
-with (import <nixpkgs> {});
+# with (import <nixpkgs> {});
+with (import <nixos1803> {});
 with (callPackage ./. {});
 
-{ sourceUnfilteredNormal' ? null, sourceUnfilteredRecursive' ? null }:
+{ sourceUnfilteredNormal' ? null, sourceUnfilteredRecursive' ? null, sourceUnfilteredGitdir' ? null }:
 
 let
   testLib = ''
@@ -57,6 +58,47 @@ let
     cp -r "$1" "$1" 2>&1 | grep -vq 'cannot copy a directory, .*into itself' || :
   '';
 
+  createTreeGitdir = ''
+    touches() { (
+        mkdir -p "$1"; cd "$1"; shift
+        touch "$@"
+    ); }
+
+    create-tree() { (
+        mkdir -p "$1"; cd "$1"
+
+        touch testfile
+        touch .gitnotignored
+
+        touches .git shouldbeignored
+        touches testdir .gitnotignored
+    ); }
+
+    create-tree "$1"
+
+    echo "" > "$1/.gitignore"
+  '';
+
+  createTreeGitdirtestGit = ''
+    touches() { (
+        mkdir -p "$1"; cd "$1"; shift
+        touch "$@"
+    ); }
+
+    create-tree() { (
+        mkdir -p "$1"; cd "$1"
+
+        touch testfile
+        touch .gitnotignored
+
+        touches testdir .gitnotignored
+    ); }
+
+    create-tree "$1"
+
+    echo "" > "$1/.gitignore"
+  '';
+
   ignores = ''
     1-simpl/1
     /1-simpl/2
@@ -97,10 +139,13 @@ let
   # sourceUnfilteredNormal' is a copy of sourceUnfilteredNormal, which lives in the nix store
   sourceUnfilteredNormal     = createSourceTree createTreeNormal;
   sourceUnfilteredRecursive  = createSourceTree createTreeRecursive;
+  sourceUnfilteredGitdir = createSourceTree createTreeGitdir;
+  sourceGitGitdir        = createSourceTree createTreeGitdirtestGit;
 
   # basic
 
   sourceNixNormal = gitignoreSource [] sourceUnfilteredNormal';
+  sourceNixGitdir = gitignoreSource [] sourceUnfilteredGitdir';
 
   sourceNix_all               = builtins.filterSource (_: _: true) sourceUnfilteredNormal';
   sourceNix_pure              = gitignoreSourcePure [] sourceUnfilteredNormal';
@@ -153,6 +198,7 @@ let
 in with builtins; {
   inherit sourceUnfilteredNormal sourceGitNormal sourceNixNormal;
   inherit sourceUnfilteredRecursive sourceGitRecursive sourceNixRecursive;
+  inherit sourceUnfilteredGitdir sourceGitGitdir sourceNixGitdir;
   inherit testLib;
 
   # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfilteredNormal')/test-tree" .
@@ -168,6 +214,7 @@ in with builtins; {
         ${testLib}
         test-main ${sourceGitNormal} ${sourceNixNormal} && \
         test-main ${sourceGitRecursive} ${sourceNixRecursive} && \
+        test-main "${sourceGitGitdir}/test-tree" ${sourceNixGitdir} && \
         touch $out/success
       '';
     in
