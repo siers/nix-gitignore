@@ -1,0 +1,9 @@
+language: nix
+env:
+  - NIXPKGS_CHANNEL=nixos-18.03
+  - NIXPKGS_CHANNEL=nixos-18.09
+  - NIXPKGS_CHANNEL=nixos-19.03
+  - NIXPKGS_CHANNEL=nixos-unstable
+
+script:
+  - ./run-tests.sh

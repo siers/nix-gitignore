@@ -1,7 +1,7 @@
 with (import <nixpkgs> {});
 with (callPackage ./. {});
 
-{ source ? null }:
+{ sourceBeforeNormal' ? null, sourceBeforeRecursive' ? null, sourceBeforeGitdir' ? null }:
 
 let
   testLib = ''
@@ -21,7 +21,7 @@ let
     }
   '';
 
-  createTree = ''
+  createTreeNormal = ''
     touches() { (
         mkdir -p "$1"; cd "$1"; shift
         touch "$@"
@@ -53,8 +53,49 @@ let
     cat ${builtins.toFile "nixgitignore-ignores" ignoresAux} > "$1/aux.gitignore"
   '';
 
-  createTreeRecursive = createTree + "\n" + ''
+  createTreeRecursive = createTreeNormal + "\n" + ''
     cp -r "$1" "$1" 2>&1 | grep -vq 'cannot copy a directory, .*into itself' || :
+  '';
+
+  createTreeGitdir = ''
+    touches() { (
+        mkdir -p "$1"; cd "$1"; shift
+        touch "$@"
+    ); }
+
+    create-tree() { (
+        mkdir -p "$1"; cd "$1"
+
+        touch testfile
+        touch .gitnotignored
+
+        touches .git shouldbeignored
+        touches testdir .gitnotignored
+    ); }
+
+    create-tree "$1"
+
+    echo "" > "$1/.gitignore"
+  '';
+
+  createTreeGitdirtestGit = ''
+    touches() { (
+        mkdir -p "$1"; cd "$1"; shift
+        touch "$@"
+    ); }
+
+    create-tree() { (
+        mkdir -p "$1"; cd "$1"
+
+        touch testfile
+        touch .gitnotignored
+
+        touches testdir .gitnotignored
+    ); }
+
+    create-tree "$1"
+
+    echo "" > "$1/.gitignore"
   '';
 
   ignores = ''
@@ -90,44 +131,39 @@ let
   ignoresAux = "/9-expected/*filepath\n";
 
   createSourceTree = createTree: (runCommand "test-tree" {} ''
-    mkdir -p $out; cd $out;
-    bash ${builtins.toFile "create-tree" createTree} test-tree
+    mkdir -p $out;
+    bash ${builtins.toFile "create-tree" createTree} $out
    '');
 
-  # source is a copy of sourceUnfiltered, which lives in the nix store
-  sourceUnfiltered = createSourceTree createTree;
-  sourceUnfilteredRecursive = createSourceTree createTreeRecursive;
-
-  sourceRecursive = source + "-recursive";
+  # sourceBeforeNormal' is a copy of sourceBeforeNormal, which lives in the nix store
+  sourceBeforeNormal    = createSourceTree createTreeNormal;
+  sourceBeforeRecursive = createSourceTree createTreeRecursive;
+  sourceBeforeGitdir    = createSourceTree createTreeGitdir;
 
   # basic
 
-  sourceNix = gitignoreSource [] source;
+  sourceActualNormal = gitignoreSource [] sourceBeforeNormal';
+  sourceActualRecursive = gitignoreFilterRecursiveSource (_: _: true) [] sourceBeforeRecursive';
+  sourceActualGitdir = gitignoreSource [] sourceBeforeGitdir';
 
-  sourceNix_all               = builtins.filterSource (_: _: true) source;
-  sourceNix_pure              = gitignoreSourcePure [] source;
+  sourceActual_all  = builtins.filterSource (_: _: true) sourceBeforeNormal';
+  sourceActual_pure = gitignoreSourcePure [] sourceBeforeNormal';
 
   # aux
 
-  sourceNixAux = aux: gitignoreFilterSource
+  sourceActualAux = aux: gitignoreFilterSource
     (name: _: (builtins.match ".*/9-?-expected/.*filter$" name) == null)
     aux
-    source;
+    sourceBeforeNormal';
 
-  sourceNix_aux_string        = sourceNixAux "/9-expected/filtered*\n";
-  sourceNix_aux_arr_string    = sourceNixAux ["/9-expected/filtered*\n"];
-  sourceNix_aux_arr_combined  =
-    sourceNixAux ["/9-expected/*ignore\n" (source + "/aux.gitignore")];
-
-  # recursive
-
-  sourceRecursiveNix = gitignoreFilterRecursiveSource (_: _: true) [] sourceRecursive;
-  sourceRecursiveGit = sourceGitFrom sourceRecursive;
+  sourceActual_aux_string        = sourceActualAux "/9-expected/filtered*\n";
+  sourceActual_aux_arr_string    = sourceActualAux ["/9-expected/filtered*\n"];
+  sourceActual_aux_arr_combined  =
+    sourceActualAux ["/9-expected/*ignore\n" (sourceBeforeNormal' + "/aux.gitignore")];
 
   #
 
-  sourceGit = sourceGitFrom source;
-  sourceGitFrom = source: runCommand "test-tree-git" {} ''
+  sourceExpectedFrom = source: runCommand "test-tree-git" {} ''
     mkdir -p $out/tmp; cd $out/tmp
     cp -r ${source}/{*,.gitignore} .; chmod -R u+w .
 
@@ -150,31 +186,38 @@ let
     cd $out; rm -rf tmp
   '';
 
-  typeErrorOrDeprecationWarning = gitignoreSource source;
+  sourceExpectedNormal    = sourceExpectedFrom sourceBeforeNormal';
+  sourceExpectedRecursive = sourceExpectedFrom sourceBeforeRecursive';
+  sourceExpectedGitdir    = createSourceTree createTreeGitdirtestGit;
+
+  typeErrorOrDeprecationWarning = gitignoreSource sourceBeforeNormal';
 
 in with builtins; {
-  inherit sourceUnfiltered sourceUnfilteredRecursive sourceNix sourceGit;
+  inherit sourceBeforeNormal sourceExpectedNormal sourceActualNormal;
+  inherit sourceBeforeRecursive sourceExpectedRecursive sourceActualRecursive;
+  inherit sourceBeforeGitdir sourceExpectedGitdir sourceActualGitdir;
   inherit testLib;
 
-  # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceUnfiltered')/test-tree" .
-  # nix eval --raw '(((import ./test.nix { source = ./test-tree; }).debug_compiled))' | jq -r .
-  debug_compiled = toJSON (compileRecursiveGitignore source);
-  # nix eval '(((import ./test.nix { source = ./test-tree; }).debug_patterns))' | jq -r . | jq .
-  debug_patterns = toJSON (gitignoreToPatterns (compileRecursiveGitignore source));
+  # BEFORE: rm -rf test-tree; cp --no-preserve=all -r "$(nix-build -E '(import ./test.nix {}).sourceBeforeNormal')/test-tree" .
+  # nix eval --raw '(((import ./test.nix { sourceBeforeNormal' = ./test-tree; }).debug_compiled))' | jq -r .
+  debug_compiled = toJSON (compileRecursiveGitignore sourceBeforeNormal');
+  # nix eval '(((import ./test.nix { sourceBeforeNormal' = ./test-tree; }).debug_patterns))' | jq -r . | jq .
+  debug_patterns = toJSON (gitignoreToPatterns (compileRecursiveGitignore sourceBeforeNormal'));
 
   success =
     let
       test = runCommand "nix-gitignore-test" {} ''
         mkdir -p $out; cd $out
         ${testLib}
-        test-main ${sourceGit} ${sourceNix} && \
-        test-main ${sourceRecursiveGit} ${sourceRecursiveNix} && \
+        test-main ${sourceExpectedNormal} ${sourceActualNormal} && \
+        test-main ${sourceExpectedRecursive} ${sourceActualRecursive} && \
+        test-main ${sourceExpectedGitdir} ${sourceActualGitdir} && \
         touch $out/success
       '';
     in
-      assert sourceNix_all == sourceNix_pure;
-      assert sourceNix_aux_string == sourceNix_aux_arr_string;
-      assert sourceNix_aux_string == sourceNix_aux_arr_combined;
+      assert sourceActual_all == sourceActual_pure;
+      assert sourceActual_aux_string == sourceActual_aux_arr_string;
+      assert sourceActual_aux_string == sourceActual_aux_arr_combined;
       assert (tryEval typeErrorOrDeprecationWarning).success == false;
       test;
 }
