@@ -152,9 +152,14 @@ in rec {
     lib.toList patterns ++ [(compileRecursiveGitignore root)];
 
   # filterSource derivatives
+  gitignoreFilterSourcePureNamed = name: filter: patterns: root:
+    builtins.path {
+      inherit name;
+      path = root;
+      filter = gitignoreFilterPure filter patterns root;
+    };
 
-  gitignoreFilterSourcePure = filter: patterns: root:
-    filterSource (gitignoreFilterPure filter patterns root) root;
+  gitignoreFilterSourcePure = gitignoreFilterSourcePureNamed "gitignore-src";
 
   gitignoreFilterSource = filter: patterns: root:
     gitignoreFilterSourcePure filter (withGitIgnoredFilesAndDirs patterns root) root;
