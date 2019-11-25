@@ -146,8 +146,12 @@ let
   sourceActualRecursive = gitignoreFilterRecursiveSource (_: _: true) [] sourceBeforeRecursive';
   sourceActualGitdir = gitignoreSource [] sourceBeforeGitdir';
 
-  sourceActual_all  = builtins.filterSource (_: _: true) sourceBeforeNormal';
   sourceActual_pure = gitignoreSourcePure [] sourceBeforeNormal';
+  sourceActual_all  = builtins.path {
+    name = "gitignore-src";
+    path = sourceBeforeNormal';
+    filter = (_: _: true);
+  };
 
   # aux
 
