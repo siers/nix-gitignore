@@ -1,11 +1,14 @@
-Supposedly (I haven't used it), there's a better version of nix-gitignore (inspired by this one) over at https://github.com/hercules-ci/gitignore that has the details of its functionality and superiority in its `README`. I hope you found this project useful and thank you for the many github stars. :)
+# head over to [hercules-ci/gitignore](https://github.com/hercules-ci/gitignore)
+# ↑↑↑
 
-# nix-gitignore 
+<hr>
+
+# nix-gitignore
 
 (for nix 2.0 or higher)
 
 This implements primitive a gitignore filter for `builtins.filterSource` via
-translation to regexes. Please add give this a star iff this project proves to be useful to you.
+translation to regexes.
 
 * [Motivation](#motivation)
 * [Example](#example)
