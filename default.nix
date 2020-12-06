@@ -89,7 +89,9 @@ in rec {
       (filter (l: !isList l && !isComment l)
       (split "\n" gitignore));
 
-  gitignoreFilter = ign: root: filterPattern (gitignoreToPatterns ign) root;
+  gitignoreFilter = ign: let
+    patterns = gitignoreToPatterns ign;
+  in root: filterPattern patterns root;
 
   # string|[string|file] (→ [string|file] → [string]) -> string
   gitignoreCompileIgnore = file_str_patterns: root:
@@ -98,9 +100,10 @@ in rec {
       str_patterns = map (onPath readFile) (lib.toList file_str_patterns);
     in concatStringsSep "\n" str_patterns;
 
-  gitignoreFilterPure = filter: patterns: root: name: type:
-    gitignoreFilter (gitignoreCompileIgnore patterns root) root name type
-    && filter name type;
+  gitignoreFilterPure = filter: patterns: root: let
+    compiledFilter = gitignoreCompileIgnore patterns root;
+    filterFn = gitignoreFilter compiledFilter;
+  in name: type: filterFn root name type && filter name type;
 
   # This is a very hacky way of programming this!
   # A better way would be to reuse existing filtering by making multiple gitignore functions per each root.
