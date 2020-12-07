@@ -18,9 +18,13 @@ let
 in rec {
   # [["good/relative/source/file" true] ["bad.tmpfile" false]] -> root -> path
   filterPattern = patterns: root:
-    (name: _type: let
-      relPath = lib.removePrefix ((toString root) + "/") name;
-    in foldl' (acc: pat: if !acc then acc else (match (lib.elemAt pat 0) relPath == null)) true patterns);
+    let
+      filters = map (pair: relPath: if match (head pair) relPath == null then true else last pair) patterns;
+    in
+      name: _type:
+        let
+          relPath = lib.removePrefix ((toString root) + "/") name;
+        in foldl' (acc: f: if acc == true then f relPath else acc) true filters;
 
   # string -> [[regex bool]]
   gitignoreToPatterns = gitignore:
